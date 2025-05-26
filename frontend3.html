@@ -1,0 +1,27 @@
+<<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Leaderboard - 3º Ano</title>
+  <link href="css/style3ano.css" rel="stylesheet"/>
+</head>
+<body>
+  <div id="sala-info">
+    <span id="contador-nomes">Nomes: 0</span>
+    <span id="contador-coins">Coins: 0</span>
+  </div>
+
+  <div class="container">
+    <h1>Leaderboard - 3º Ano</h1>
+    <div id="turmas-3" class="turmas">
+      <button class="tab-button" onclick="showLeaderboard('3A')">3°A</button>
+      <button class="tab-button" onclick="showLeaderboard('3B')">3°B</button>
+      <button class="tab-button" onclick="showLeaderboard('3C')">3°C</button>
+    </div>
+    <div id="leaderboard"></div>
+  </div>
+
+  <script src="js/frontend3.js"></script>
+</body>
+</html>

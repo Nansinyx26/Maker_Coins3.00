@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>3º Ano - Maker Coins</title>
+  <link rel="stylesheet" href="css/style3ano.css"/>
+</head>
+<body>
+  <div class="container">
+    <h1>Maker Coins - 3º Ano</h1>
+    <div class="button-container">
+      <button onclick="window.location.href='frontend3.html'">Ver Leaderboard</button>
+      <button onclick="authenticate()">Ir para Atualização</button>
+    </div>
+  </div>
+
+  <script src="js/index.js"></script>
+  <script>
+    function authenticate() {
+      const senha = prompt('Digite a senha para acessar a página de atualização:');
+      if (senha === 'Mantra2222') {
+        window.location.href = 'atualizacao3.html';
+      } else {
+        alert('Senha incorreta. Acesso negado.');
+      }
+    }
+  </script>
+</body>
+</html>

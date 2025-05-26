@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Atualizar Coins - 3º Ano</title>
+  <link href="css/style3ano.css" rel="stylesheet"/>
+</head>
+<body>
+  <div id="sala-info">
+    <span id="contador-nomes">Nomes: 0</span>
+    <span id="contador-coins">Coins: 0</span>
+  </div>
+
+  <div class="container">
+    <h1>Atualizar Coins - 3º Ano</h1>
+
+    <div id="turmas-3" class="turmas">
+      <button class="tab-button" onclick="setClass('3A')">3°A</button>
+      <button class="tab-button" onclick="setClass('3B')">3°B</button>
+      <button class="tab-button" onclick="setClass('3C')">3°C</button>
+    </div>
+
+    <div class="input-section">
+      <label for="name">Nome:</label>
+      <input id="name" type="text" placeholder="Digite o nome"/>
+
+      <label for="coins">Coins (positivo ou negativo):</label>
+      <input id="coins" type="number" placeholder="Digite a quantidade"/>
+
+      <button onclick="saveData()">Salvar</button>
+      <button onclick="window.location.href='frontend3.html'">Ver Leaderboard</button>
+    </div>
+<div style="display: flex; align-items: center; gap: 0.5rem;">
+  <input id="coins" type="number" placeholder="Digite a quantidade" style="flex: 1;" />
+  <label style="font-size: 0.9rem;">
+    <input type="checkbox" id="isNegative" onchange="toggleJustificativa()" />
+    Negativo
+  </label>
+</div>
+
+<div id="justificativa-container" style="display: none; margin-top: 1rem;">
+  <label for="justificativa">Justificativa pelo negativo:</label>
+  <textarea id="justificativa" rows="3" placeholder="Descreva o motivo da penalidade" style="width: 100%; padding: 0.5rem;"></textarea>
+</div>
+    <p class="alert" id="alert"></p>
+
+    <h2>Dados Salvos:</h2>
+    <div id="savedData"></div>
+
+    <div class="input-section">
+      <label for="pesquisa">Pesquisar histórico por nome:</label>
+      <input id="pesquisa" type="text" placeholder="Digite o nome do aluno"/>
+      <button onclick="mostrarHistorico()">Ver Histórico</button>
+    </div>
+
+    <div id="historicoAluno"></div>
+    <button id="export-button" onclick="exportToTXT()">Exportar TXT</button>
+  </div>
+
+  <script src="js/atualizacao3.js"></script>
+</body>
+</html>

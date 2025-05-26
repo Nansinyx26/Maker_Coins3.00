@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Makercoins
+  </title>
+  <link href="css/style1.css" rel="stylesheet"/>
+  <style>
+   #sala-info {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: #34495e;
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            color: #ecf0f1;
+            font-size: 1rem;
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+  </style>
+ </head>
+ <body>
+  <!-- Contador no topo direito -->
+  <div id="sala-info">
+   <span id="contador-nomes">
+    Nomes: 0
+   </span>
+   <span id="contador-coins">
+    Coins: 0
+   </span>
+  </div>
+  <div class="container">
+   <h1>
+    Maker Coins
+   </h1>
+   <!-- Seção para selecionar a turma -->
+   <div class="tabs">
+    <button class="tab-button" onclick="showLeaderboard('5A')">
+     5°A
+    </button>
+    <button class="tab-button" onclick="showLeaderboard('5B')">
+     5°B
+    </button>
+    <button class="tab-button" onclick="showLeaderboard('5C')">
+     5°C
+    </button>
+   </div>
+   <!-- Exibição dos dados -->
+   <div id="leaderboard">
+   </div>
+  </div>
+  <script src="js/frontend.js">
+  </script>
+ </body>
+</html>
