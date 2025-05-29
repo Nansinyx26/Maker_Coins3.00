@@ -100,10 +100,21 @@
      Nome:
     </label>
     <input id="name" placeholder="Digite o nome" type="text"/>
-    <label for="coins">
-     Coins (positivo ou negativo):
-    </label>
-    <input id="coins" placeholder="Digite a quantidade" type="number"/>
+    <label for="coins">Coins:</label>
+<input id="coins" type="number" placeholder="Digite a quantidade" />
+
+<div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+  <label style="font-size: 0.9rem;">
+    <input type="checkbox" id="isNegative" onchange="toggleJustificativa()" />
+    Negativo
+  </label>
+</div>
+
+<div id="justificativa-container" style="display: none; margin-top: 1rem;">
+  <label for="justificativa">Justificativa pelo negativo:</label>
+  <textarea id="justificativa" rows="3" placeholder="Descreva o motivo da penalidade" style="width: 100%; padding: 0.5rem;"></textarea>
+</div>
+
     <button onclick="saveData()">
      Salvar
     </button>
