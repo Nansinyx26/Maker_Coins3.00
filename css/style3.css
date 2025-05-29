@@ -60,3 +60,44 @@ button:hover {
 button:active {
     background: #16a085;
 }
+
+.button {
+  background: #34495e;
+  color: #ecf0f1;
+  border: none;
+  padding: 0.8rem 1.2rem;
+  font-size: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.button:hover {
+  background: #1abc9c;
+  transform: scale(1.05);
+}
+
+.button:active {
+  background: #16a085;
+}
+
+.justificativa-btn {
+  background: #34495e;
+  color: #ecf0f1;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  margin-left: 1rem;
+}
+
+.justificativa-btn:hover {
+  background: #1abc9c;
+  transform: scale(1.05);
+}
+
+.justificativa-btn:active {
+  background: #16a085;
+}
