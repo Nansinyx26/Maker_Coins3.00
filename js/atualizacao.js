@@ -152,11 +152,11 @@ function mostrarHistorico() {
     if (item.valor < 0 && item.justificativa) {
       const btn = document.createElement('button');
       btn.textContent = 'Mostrar Justificativa';
-      btn.classList.add('justificativa-btn'); // usa classe dedicada
+      btn.classList.add('justificativa-btn');
       btn.onclick = () => {
         alert(`Justificativa: ${item.justificativa}`);
       };
-      // Estilos idênticos ao botão principal
+
       btn.style.background = '#34495e';
       btn.style.color = '#ecf0f1';
       btn.style.border = 'none';
@@ -167,7 +167,6 @@ function mostrarHistorico() {
       btn.style.transition = 'background-color 0.3s ease, transform 0.3s ease';
       btn.style.marginLeft = '1rem';
 
-      // Efeito de hover (opcional)
       btn.addEventListener('mouseover', () => {
         btn.style.background = '#1abc9c';
         btn.style.transform = 'scale(1.05)';
@@ -186,3 +185,87 @@ function mostrarHistorico() {
   container.appendChild(lista);
 }
 
+function importarAlunos() {
+  const fileInput = document.getElementById('fileUpload');
+  const file = fileInput.files[0];
+
+  if (!file) {
+    alert('Selecione um arquivo .txt.');
+    return;
+  }
+
+  if (!selectedClass) {
+    alert('Selecione uma turma antes de importar.');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const linhas = e.target.result.split('\n');
+
+    linhas.forEach(linha => {
+      const nomeBruto = linha.trim();
+      if (nomeBruto) {
+        const nomeNormalizado = removerAcentos(nomeBruto).toLowerCase().replace(/\s+/g, ' ').trim();
+        const key = `${selectedClass}_${nomeNormalizado}`;
+        const historicoKey = `${key}_historico`;
+
+        if (!localStorage.getItem(key)) {
+          localStorage.setItem(key, 0);
+          localStorage.setItem(historicoKey, JSON.stringify([]));
+        }
+      }
+    });
+
+    alert('Alunos importados com sucesso!');
+    fileInput.value = '';
+    document.getElementById('nome-arquivo').textContent = 'Nenhum arquivo selecionado';
+    displaySavedData();
+  };
+
+  reader.readAsText(file);
+}
+
+function mostrarNomeArquivo() {
+  const fileInput = document.getElementById('fileUpload');
+  const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : 'Nenhum arquivo selecionado';
+  document.getElementById('nome-arquivo').textContent = fileName;
+}
+
+// ✅ Adicionando função que estava faltando
+function alterarTodos(acao) {
+  if (!selectedClass) {
+    alert("Selecione uma turma antes.");
+    return;
+  }
+
+  const valorInput = parseInt(document.getElementById('coinsGroup').value, 10);
+  if (isNaN(valorInput) || valorInput <= 0) {
+    alert("Digite um valor positivo válido.");
+    return;
+  }
+
+  const valorAplicado = acao === 'remove' ? -Math.abs(valorInput) : Math.abs(valorInput);
+
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith(selectedClass) && !key.includes('_historico')) {
+      const atual = parseInt(localStorage.getItem(key)) || 0;
+      const novoValor = atual + valorAplicado;
+      localStorage.setItem(key, novoValor);
+
+      const historicoKey = `${key}_historico`;
+      let historico = JSON.parse(localStorage.getItem(historicoKey)) || [];
+      historico.push({
+        data: new Date().toLocaleString(),
+        valor: valorAplicado,
+        justificativa: acao === 'remove' ? 'Remoção geral' : 'Distribuição geral'
+      });
+      localStorage.setItem(historicoKey, JSON.stringify(historico));
+    }
+  }
+
+  alert("Coins atualizados para todos da turma.");
+  document.getElementById('coinsGroup').value = '';
+  displaySavedData();
+}
