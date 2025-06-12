@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
- <head>
-  <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>
-   Atualizar Coins - Maker Coin System
-  </title>
-  <link href="css/style.css" rel="stylesheet"/>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Atualizar Coins - Maker Coin System</title>
+  <link href="css/style.css" rel="stylesheet" />
   <style>
-   #sala-info {
+    #sala-info {
       position: fixed;
       top: 1rem;
       right: 1rem;
@@ -67,87 +65,113 @@
       border-bottom: 1px solid #7f8c8d;
     }
   </style>
- </head>
- <body>
+</head>
+<body>
   <!-- Contador -->
   <div id="sala-info">
-   <span id="contador-nomes">
-    Nomes: 0
-   </span>
-   <span id="contador-coins">
-    Coins: 0
-   </span>
+    <span id="contador-nomes">Nomes: 0</span>
+    <span id="contador-coins">Coins: 0</span>
   </div>
+
   <div class="container">
-   <h1>
-    Atualizar Coins
-   </h1>
-   <!-- Seleção da turma -->
-   <div class="tabs">
-    <button class="tab-button" onclick="setClass('5A')">
-     5°A
-    </button>
-    <button class="tab-button" onclick="setClass('5B')">
-     5°B
-    </button>
-    <button class="tab-button" onclick="setClass('5C')">
-     5°C
-    </button>
-   </div>
-   <!-- Formulário -->
-   <div class="input-section">
-    <label for="name">
-     Nome:
-    </label>
-    <input id="name" placeholder="Digite o nome" type="text"/>
-    <label for="coins">Coins:</label>
-<input id="coins" type="number" placeholder="Digite a quantidade" />
+    <h1>Atualizar Coins</h1>
 
-<div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
-  <label style="font-size: 0.9rem;">
-    <input type="checkbox" id="isNegative" onchange="toggleJustificativa()" />
-    Negativo
-  </label>
-</div>
+    <!-- Seleção da turma -->
+    <div class="tabs">
+      <button class="tab-button" onclick="setClass('5A')">5°A</button>
+      <button class="tab-button" onclick="setClass('5B')">5°B</button>
+      <button class="tab-button" onclick="setClass('5C')">5°C</button>
+    </div>
 
-<div id="justificativa-container" style="display: none; margin-top: 1rem;">
-  <label for="justificativa">Justificativa pelo negativo:</label>
-  <textarea id="justificativa" rows="3" placeholder="Descreva o motivo da penalidade" style="width: 100%; padding: 0.5rem;"></textarea>
-</div>
+    <!-- Ação em grupo -->
+    <div class="group-action" style="margin-top: 1rem;">
+      <label for="coinsGroup">Valor para todos da turma:</label>
+      <input id="coinsGroup" type="number" placeholder="Digite a quantidade" style="width: 150px;" />
+      <button onclick="alterarTodos('add')">Adicionar para Todos</button>
+      <button onclick="alterarTodos('remove')">Remover de Todos</button>
+    </div>
+    
 
-    <button onclick="saveData()">
-     Salvar
-    </button>
-    <button onclick="window.location.href='frontend.html'">
-     Ver Leaderboard
-    </button>
-   </div>
-   <p class="alert" id="alert">
-   </p>
-   <!-- Lista -->
-   <h2>
-    Dados Salvos:
-   </h2>
-   <div id="savedData">
-   </div>
-   <!-- Histórico -->
-   <div class="input-section">
-    <label for="pesquisa">
-     Pesquisar histórico por nome:
-    </label>
-    <input id="pesquisa" placeholder="Digite o nome do aluno" type="text"/>
-    <button onclick="mostrarHistorico()">
-     Ver Histórico
-    </button>
-   </div>
-   <div id="historicoAluno">
-   </div>
-   <!-- Exportar -->
-   <button id="export-button" onclick="exportToTXT()">
-    Exportar TXT
-   </button>
+    <!-- Formulário -->
+    <div class="input-section">
+      <label for="name">Nome:</label>
+      <input id="name" placeholder="Digite o nome" type="text" />
+
+      <label for="coins">Coins:</label>
+      <input id="coins" type="number" placeholder="Digite a quantidade" />
+
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+        <label style="font-size: 0.9rem;">
+          <input type="checkbox" id="isNegative" onchange="toggleJustificativa()" />
+          Negativo
+        </label>
+      </div>
+
+      <div id="justificativa-container" style="display: none; margin-top: 1rem;">
+        <label for="justificativa">Justificativa pelo negativo:</label>
+        <textarea id="justificativa" rows="3" placeholder="Descreva o motivo da penalidade" style="width: 100%; padding: 0.5rem;"></textarea>
+      </div>
+
+      <button onclick="saveData()">Salvar</button>
+      <button onclick="window.location.href='frontend.html'">Ver Leaderboard</button>
+    </div>
+
+    <p class="alert" id="alert"></p>
+
+    <h2>Dados Salvos:</h2>
+    <div id="savedData"></div>
+
+    <!-- Histórico -->
+    <div class="input-section">
+      <label for="pesquisa">Pesquisar histórico por nome:</label>
+      <input id="pesquisa" placeholder="Digite o nome do aluno" type="text" />
+      <button onclick="mostrarHistorico()">Ver Histórico</button>
+    </div>
+
+    <div id="historicoAluno"></div>
+
+    <!-- Exportar -->
+    <button id="export-button" onclick="exportToTXT()">Exportar TXT</button>
   </div>
-  <script src="js/atualizacao.js">
+
+  <script src="js/atualizacao.js"></script>
+  <script>
+    function alterarTodos(acao) {
+      if (!selectedClass) {
+        alert("Selecione uma turma antes.");
+        return;
+      }
+
+      const valorInput = parseInt(document.getElementById('coinsGroup').value, 10);
+      if (isNaN(valorInput) || valorInput <= 0) {
+        alert("Digite um valor positivo válido.");
+        return;
+      }
+
+      const valorAplicado = acao === 'remove' ? -Math.abs(valorInput) : Math.abs(valorInput);
+
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith(selectedClass) && !key.includes('_historico')) {
+          const atual = parseInt(localStorage.getItem(key)) || 0;
+          const novoValor = atual + valorAplicado;
+          localStorage.setItem(key, novoValor);
+
+          const historicoKey = `${key}_historico`;
+          let historico = JSON.parse(localStorage.getItem(historicoKey)) || [];
+          historico.push({
+            data: new Date().toLocaleString(),
+            valor: valorAplicado,
+            justificativa: acao === 'remove' ? 'Remoção geral' : 'Distribuição geral'
+          });
+          localStorage.setItem(historicoKey, JSON.stringify(historico));
+        }
+      }
+
+      alert("Coins atualizados para todos da turma.");
+      document.getElementById('coinsGroup').value = '';
+      displaySavedData();
+    }
   </script>
- </body>
+</body>
 </html>
