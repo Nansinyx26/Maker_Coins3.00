@@ -203,3 +203,66 @@ h2 {
     background-color: #1abc9c;
     transform: scale(1.05);
 }
+.import-section {
+    margin: 1.5rem 0;
+    background: #34495e;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.upload-label {
+    font-weight: 600;
+    color: #ecf0f1;
+    font-size: 1rem;
+}
+
+.file-input {
+    padding: 0.6rem;
+    background: #2c3e50;
+    color: #ecf0f1;
+    border: 1px solid #34495e;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    width: 220px;
+}
+
+.import-button {
+    padding: 0.8rem 1.5rem;
+    border-radius: 5px;
+    border: none;
+    background-color: #16a085;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.import-button:hover {
+    background-color: #1abc9c;
+    transform: scale(1.05);
+}
+
+.file-upload-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.file-upload-wrapper input[type="file"] {
+    display: none;
+}
+
+.file-name {
+    font-size: 0.95rem;
+    color: #bdc3c7;
+    font-style: italic;
+}
