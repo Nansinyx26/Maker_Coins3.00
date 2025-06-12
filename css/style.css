@@ -160,3 +160,46 @@ h2 {
     background: #c0392b;
     transform: scale(1.05);
 }
+.group-action {
+    margin-bottom: 2rem;
+    background: #34495e;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.group-action label {
+    font-weight: 600;
+    color: #ecf0f1;
+}
+
+.group-action input[type="number"] {
+    padding: 0.8rem;
+    border-radius: 5px;
+    border: 1px solid #34495e;
+    background: #2c3e50;
+    color: #ecf0f1;
+    font-size: 1rem;
+    width: 150px;
+}
+
+.group-action button {
+    padding: 0.8rem 1.5rem;
+    border-radius: 5px;
+    border: none;
+    background-color: #16a085;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.group-action button:hover {
+    background-color: #1abc9c;
+    transform: scale(1.05);
+}
