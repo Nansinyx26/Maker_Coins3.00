@@ -6,21 +6,7 @@
   <title>Atualizar Coins - Maker Coin System</title>
   <link href="css/style.css" rel="stylesheet" />
   <style>
-    #sala-info {
-      position: fixed;
-      top: 1rem;
-      right: 1rem;
-      background: #34495e;
-      padding: 0.8rem 1.2rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-      color: #ecf0f1;
-      font-size: 1rem;
-      display: flex;
-      gap: 1rem;
-      z-index: 1000;
-    }
-
+    /* Botão de exportação fixo */
     #export-button {
       position: fixed;
       bottom: 1rem;
@@ -64,6 +50,68 @@
       padding: 0.3rem;
       border-bottom: 1px solid #7f8c8d;
     }
+
+    .import-section {
+      margin: 1.5rem 0;
+      background: #34495e;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .file-upload-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .file-upload-wrapper input[type="file"] {
+      display: none;
+    }
+
+    .import-button {
+      padding: 0.8rem 1.5rem;
+      border-radius: 5px;
+      border: none;
+      background-color: #16a085;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .import-button:hover {
+      background-color: #1abc9c;
+      transform: scale(1.05);
+    }
+
+    .file-name {
+      font-size: 0.95rem;
+      color: #bdc3c7;
+      font-style: italic;
+    }
+
+    #sala-info {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: #34495e;
+      padding: 0.8rem 1.2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      color: #ecf0f1;
+      font-size: 1rem;
+      display: flex;
+      gap: 1rem;
+      z-index: 1000;
+    }
   </style>
 </head>
 <body>
@@ -83,24 +131,36 @@
       <button class="tab-button" onclick="setClass('5C')">5°C</button>
     </div>
 
+    <!-- Upload de alunos -->
+    <div class="import-section">
+      <label class="upload-label">Importar lista de alunos (.txt):</label>
+      <div class="file-upload-wrapper">
+        <input type="file" id="fileUpload" accept=".txt" onchange="mostrarNomeArquivo()" />
+        <button type="button" onclick="document.getElementById('fileUpload').click()" class="import-button">
+          Escolher Arquivo
+        </button>
+        <span id="nome-arquivo" class="file-name">Nenhum arquivo selecionado</span>
+      </div>
+      <button class="import-button" onclick="importarAlunos()">Importar Alunos</button>
+    </div>
+
     <!-- Ação em grupo -->
-    <div class="group-action" style="margin-top: 1rem;">
+    <div class="group-action">
       <label for="coinsGroup">Valor para todos da turma:</label>
-      <input id="coinsGroup" type="number" placeholder="Digite a quantidade" style="width: 150px;" />
+      <input id="coinsGroup" type="number" placeholder="Digite a quantidade" />
       <button onclick="alterarTodos('add')">Adicionar para Todos</button>
       <button onclick="alterarTodos('remove')">Remover de Todos</button>
     </div>
-    
 
-    <!-- Formulário -->
+    <!-- Formulário individual -->
     <div class="input-section">
       <label for="name">Nome:</label>
-      <input id="name" placeholder="Digite o nome" type="text" />
+      <input id="name" type="text" placeholder="Digite o nome" />
 
       <label for="coins">Coins:</label>
       <input id="coins" type="number" placeholder="Digite a quantidade" />
 
-      <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
         <label style="font-size: 0.9rem;">
           <input type="checkbox" id="isNegative" onchange="toggleJustificativa()" />
           Negativo
@@ -124,7 +184,7 @@
     <!-- Histórico -->
     <div class="input-section">
       <label for="pesquisa">Pesquisar histórico por nome:</label>
-      <input id="pesquisa" placeholder="Digite o nome do aluno" type="text" />
+      <input id="pesquisa" type="text" placeholder="Digite o nome do aluno" />
       <button onclick="mostrarHistorico()">Ver Histórico</button>
     </div>
 
@@ -135,43 +195,5 @@
   </div>
 
   <script src="js/atualizacao.js"></script>
-  <script>
-    function alterarTodos(acao) {
-      if (!selectedClass) {
-        alert("Selecione uma turma antes.");
-        return;
-      }
-
-      const valorInput = parseInt(document.getElementById('coinsGroup').value, 10);
-      if (isNaN(valorInput) || valorInput <= 0) {
-        alert("Digite um valor positivo válido.");
-        return;
-      }
-
-      const valorAplicado = acao === 'remove' ? -Math.abs(valorInput) : Math.abs(valorInput);
-
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key.startsWith(selectedClass) && !key.includes('_historico')) {
-          const atual = parseInt(localStorage.getItem(key)) || 0;
-          const novoValor = atual + valorAplicado;
-          localStorage.setItem(key, novoValor);
-
-          const historicoKey = `${key}_historico`;
-          let historico = JSON.parse(localStorage.getItem(historicoKey)) || [];
-          historico.push({
-            data: new Date().toLocaleString(),
-            valor: valorAplicado,
-            justificativa: acao === 'remove' ? 'Remoção geral' : 'Distribuição geral'
-          });
-          localStorage.setItem(historicoKey, JSON.stringify(historico));
-        }
-      }
-
-      alert("Coins atualizados para todos da turma.");
-      document.getElementById('coinsGroup').value = '';
-      displaySavedData();
-    }
-  </script>
 </body>
 </html>
