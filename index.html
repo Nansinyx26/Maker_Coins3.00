@@ -27,6 +27,68 @@
     </div>
   </div>
 
+  <!-- Marca d'água no canto inferior esquerdo -->
+  <div style="
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    color: #7f8c8d;
+    font-size: 0.85rem;
+    opacity: 0.6;
+    z-index: 999;
+    pointer-events: none;">
+    Criado por Renan Farias
+  </div>
+
+ <!-- Botão de informações com GIF no canto superior esquerdo -->
+<button onclick="document.getElementById('sobre').style.display='block'" style="
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 1000;
+  padding: 0;
+">
+  <img src="img/information.gif" alt="Sobre" style="width: 40px; height: 40px;">
+</button>
+
+
+  <!-- Modal com informações do sistema -->
+  <div id="sobre" style="
+    display: none;
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2c3e50;
+    color: white;
+    padding: 1.5rem 2rem;
+    border-radius: 10px;
+    z-index: 1001;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);">
+    <h3 style="margin-top:0; color: #1abc9c;">Sobre o Sistema</h3>
+    <p style="line-height: 1.5;">
+      Este sistema foi desenvolvido por <strong>Renan Farias</strong> com foco em gamificação educativa.
+      Ele permite a gestão de pontuação de alunos via <code>localStorage</code> com rankings, histórico
+      e exportação de dados.
+    </p>
+    <button onclick="document.getElementById('sobre').style.display='none'" style="
+      margin-top: 1rem;
+      background: #16a085;
+      border: none;
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border-radius: 5px;
+      cursor: pointer;">
+      Fechar
+    </button>
+  </div>
+
+
   <script src="js/index.js"></script>
 </body>
 </html>
