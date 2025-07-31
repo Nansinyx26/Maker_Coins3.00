@@ -22,9 +22,79 @@
             gap: 1rem;
             z-index: 1000;
         }
+
+        /* Botões de ordenação no canto superior esquerdo */
+        #sort-buttons {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 1000;
+        }
+
+        .sort-button {
+            background: #16a085;
+            color: white;
+            border: none;
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            min-width: 140px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .sort-button:hover {
+            background: #1abc9c;
+            transform: scale(1.05);
+        }
+
+        .sort-button.active {
+            background: #e74c3c;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .sort-button.active:hover {
+            background: #c0392b;
+        }
+
+        /* Responsividade para telas menores */
+        @media (max-width: 768px) {
+            #sort-buttons {
+                flex-direction: row;
+                gap: 0.3rem;
+            }
+            
+            .sort-button {
+                min-width: 100px;
+                padding: 0.5rem 0.8rem;
+                font-size: 0.8rem;
+            }
+            
+            #sala-info {
+                flex-direction: column;
+                gap: 0.3rem;
+                font-size: 0.9rem;
+                padding: 0.6rem 1rem;
+            }
+        }
   </style>
  </head>
  <body>
+  <!-- Botões de ordenação no canto superior esquerdo -->
+  <div id="sort-buttons">
+    <button class="sort-button" onclick="toggleSort('alphabetical')" id="sort-alpha">
+      📝 Alfabética
+    </button>
+    <button class="sort-button active" onclick="toggleSort('coins')" id="sort-coins">
+      🏆 Por Coins
+    </button>
+  </div>
+
   <!-- Contador no topo direito -->
   <div id="sala-info">
    <span id="contador-nomes">
