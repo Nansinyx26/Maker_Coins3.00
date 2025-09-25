@@ -1,4 +1,5 @@
 let selectedClass = '';
+let selectedAutocompleteIndex = -1;
 
 function removerAcentos(str) {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -14,6 +15,7 @@ function setClass(className) {
   selectedClass = className;
   document.getElementById('alert').textContent = `Turma selecionada: ${className}`;
   displaySavedData();
+  setupAutocomplete(); // Atualiza o autocompletar quando a turma muda
 }
 
 function saveData() {
@@ -50,6 +52,7 @@ function saveData() {
     document.getElementById('justificativa-container').style.display = 'none';
     document.getElementById('alert').textContent = '';
     displaySavedData();
+    hideAutocomplete(); // Esconde a lista de autocompletar após salvar
   } else {
     alert('Por favor, preencha todos os campos e selecione uma turma.');
   }
@@ -92,6 +95,7 @@ function deleteData(key) {
     localStorage.removeItem(`${key}_historico`);
     alert('Dados excluídos!');
     displaySavedData();
+    setupAutocomplete(); // Atualiza o autocompletar após exclusão
   }
 }
 
@@ -221,6 +225,7 @@ function importarAlunos() {
     fileInput.value = '';
     document.getElementById('nome-arquivo').textContent = 'Nenhum arquivo selecionado';
     displaySavedData();
+    setupAutocomplete(); // Atualiza o autocompletar após importar
   };
 
   reader.readAsText(file);
@@ -232,7 +237,91 @@ function mostrarNomeArquivo() {
   document.getElementById('nome-arquivo').textContent = fileName;
 }
 
-// ✅ Adicionando função que estava faltando
+// Nova função para mostrar nome do arquivo de dados
+function mostrarNomeArquivoData() {
+  const fileInput = document.getElementById('fileUploadData');
+  const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : 'Nenhum arquivo selecionado';
+  document.getElementById('nome-arquivo-data').textContent = fileName;
+}
+
+// Nova função para importar dados com coins
+function importarDadosComCoins() {
+  const fileInput = document.getElementById('fileUploadData');
+  const file = fileInput.files[0];
+
+  if (!file) {
+    alert('Selecione um arquivo .txt.');
+    return;
+  }
+
+  if (!selectedClass) {
+    alert('Selecione uma turma antes de importar.');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const linhas = e.target.result.split('\n');
+    let importados = 0;
+    let erros = 0;
+
+    linhas.forEach(linha => {
+      const linhaTrimmed = linha.trim();
+      if (linhaTrimmed) {
+        // Aceita tanto tabulação quanto espaço como separador
+        const partes = linhaTrimmed.split(/[\t\s]+/);
+        
+        if (partes.length >= 2) {
+          // O último elemento é sempre o valor dos coins
+          const coinsValue = parseInt(partes[partes.length - 1], 10);
+          // Tudo antes do último elemento é o nome
+          const nomeBruto = partes.slice(0, -1).join(' ');
+          
+          if (!isNaN(coinsValue) && nomeBruto) {
+            const nomeNormalizado = removerAcentos(nomeBruto).toLowerCase().replace(/\s+/g, ' ').trim();
+            const key = `${selectedClass}_${nomeNormalizado}`;
+            const historicoKey = `${key}_historico`;
+
+            // Se o aluno não existe, cria com coins zero
+            if (!localStorage.getItem(key)) {
+              localStorage.setItem(key, 0);
+              localStorage.setItem(historicoKey, JSON.stringify([]));
+            }
+
+            // Adiciona os coins importados
+            const valorAtual = parseInt(localStorage.getItem(key)) || 0;
+            const novoValor = valorAtual + coinsValue;
+            localStorage.setItem(key, novoValor);
+
+            // Adiciona ao histórico
+            let historico = JSON.parse(localStorage.getItem(historicoKey)) || [];
+            historico.push({
+              data: new Date().toLocaleString(),
+              valor: coinsValue,
+              justificativa: 'Importação de dados'
+            });
+            localStorage.setItem(historicoKey, JSON.stringify(historico));
+
+            importados++;
+          } else {
+            erros++;
+          }
+        } else {
+          erros++;
+        }
+      }
+    });
+
+    alert(`Dados importados com sucesso!\nImportados: ${importados}\nErros: ${erros}`);
+    fileInput.value = '';
+    document.getElementById('nome-arquivo-data').textContent = 'Nenhum arquivo selecionado';
+    displaySavedData();
+    setupAutocomplete(); // Atualiza o autocompletar após importar
+  };
+
+  reader.readAsText(file);
+}
+
 function alterarTodos(acao) {
   if (!selectedClass) {
     alert("Selecione uma turma antes.");
@@ -269,3 +358,113 @@ function alterarTodos(acao) {
   document.getElementById('coinsGroup').value = '';
   displaySavedData();
 }
+
+// Funções do autocompletar
+function setupAutocomplete() {
+  const nameInput = document.getElementById('name');
+  const autocompleteList = document.getElementById('autocomplete-list');
+  
+  nameInput.addEventListener('input', function() {
+    const inputValue = this.value.trim();
+    hideAutocomplete();
+    selectedAutocompleteIndex = -1;
+    
+    if (inputValue.length < 2 || !selectedClass) {
+      return;
+    }
+    
+    const matches = getMatchingNames(inputValue);
+    
+    if (matches.length > 0) {
+      showAutocompleteList(matches);
+    }
+  });
+  
+  nameInput.addEventListener('keydown', function(e) {
+    const autocompleteItems = document.querySelectorAll('.autocomplete-item');
+    
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedAutocompleteIndex = Math.min(selectedAutocompleteIndex + 1, autocompleteItems.length - 1);
+      updateSelection(autocompleteItems);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedAutocompleteIndex = Math.max(selectedAutocompleteIndex - 1, -1);
+      updateSelection(autocompleteItems);
+    } else if (e.key === 'Enter' && selectedAutocompleteIndex >= 0) {
+      e.preventDefault();
+      selectAutocompleteItem(autocompleteItems[selectedAutocompleteIndex].textContent);
+    } else if (e.key === 'Escape') {
+      hideAutocomplete();
+    }
+  });
+  
+  // Esconder lista quando clicar fora
+  document.addEventListener('click', function(e) {
+    if (!nameInput.contains(e.target) && !autocompleteList.contains(e.target)) {
+      hideAutocomplete();
+    }
+  });
+}
+
+function getMatchingNames(input) {
+  const inputNormalized = removerAcentos(input).toLowerCase();
+  const matches = [];
+  
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith(selectedClass) && !key.includes('_historico')) {
+      const nomeNormalizado = key.split('_')[1];
+      const nomeFormatado = nomeNormalizado.charAt(0).toUpperCase() + nomeNormalizado.slice(1);
+      
+      if (removerAcentos(nomeNormalizado).includes(inputNormalized)) {
+        matches.push(nomeFormatado);
+      }
+    }
+  }
+  
+  return matches.sort();
+}
+
+function showAutocompleteList(matches) {
+  const autocompleteList = document.getElementById('autocomplete-list');
+  autocompleteList.innerHTML = '';
+  
+  matches.forEach((name, index) => {
+    const item = document.createElement('div');
+    item.className = 'autocomplete-item';
+    item.textContent = name;
+    item.addEventListener('click', function() {
+      selectAutocompleteItem(name);
+    });
+    autocompleteList.appendChild(item);
+  });
+  
+  autocompleteList.style.display = 'block';
+}
+
+function hideAutocomplete() {
+  const autocompleteList = document.getElementById('autocomplete-list');
+  autocompleteList.style.display = 'none';
+  selectedAutocompleteIndex = -1;
+}
+
+function updateSelection(items) {
+  items.forEach((item, index) => {
+    if (index === selectedAutocompleteIndex) {
+      item.classList.add('selected');
+    } else {
+      item.classList.remove('selected');
+    }
+  });
+}
+
+function selectAutocompleteItem(name) {
+  document.getElementById('name').value = name;
+  hideAutocomplete();
+}
+
+// Inicializar autocompletar quando a página carregar
+document.addEventListener('DOMContentLoaded', function() {
+  setupAutocomplete();
+});
