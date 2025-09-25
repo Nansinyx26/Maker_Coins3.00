@@ -5,114 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Atualizar Coins - Maker Coin System</title>
   <link href="css/style.css" rel="stylesheet" />
-  <style>
-    /* Botão de exportação fixo */
-    #export-button {
-      position: fixed;
-      bottom: 1rem;
-      right: 1rem;
-      background: #1abc9c;
-      color: white;
-      border: none;
-      padding: 0.8rem 1.2rem;
-      font-size: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-      cursor: pointer;
-      z-index: 1000;
-      transition: background-color 0.3s ease, transform 0.3s ease;
-    }
-
-    #export-button:hover {
-      background: #16a085;
-      transform: scale(1.05);
-    }
-
-    #historicoAluno {
-      margin-top: 1.5rem;
-      background: #2c3e50;
-      padding: 1rem;
-      border-radius: 8px;
-      color: #ecf0f1;
-    }
-
-    #historicoAluno h3 {
-      margin-bottom: 0.5rem;
-    }
-
-    #historicoAluno ul {
-      list-style: none;
-      padding-left: 0;
-    }
-
-    #historicoAluno li {
-      margin: 0.3rem 0;
-      padding: 0.3rem;
-      border-bottom: 1px solid #7f8c8d;
-    }
-
-    .import-section {
-      margin: 1.5rem 0;
-      background: #34495e;
-      padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .file-upload-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .file-upload-wrapper input[type="file"] {
-      display: none;
-    }
-
-    .import-button {
-      padding: 0.8rem 1.5rem;
-      border-radius: 5px;
-      border: none;
-      background-color: #16a085;
-      color: white;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background-color 0.3s ease, transform 0.2s ease;
-    }
-
-    .import-button:hover {
-      background-color: #1abc9c;
-      transform: scale(1.05);
-    }
-
-    .file-name {
-      font-size: 0.95rem;
-      color: #bdc3c7;
-      font-style: italic;
-    }
-
-    #sala-info {
-      position: fixed;
-      top: 1rem;
-      right: 1rem;
-      background: #34495e;
-      padding: 0.8rem 1.2rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-      color: #ecf0f1;
-      font-size: 1rem;
-      display: flex;
-      gap: 1rem;
-      z-index: 1000;
-    }
-  </style>
 </head>
 <body>
   <!-- Contador -->
@@ -144,6 +36,19 @@
       <button class="import-button" onclick="importarAlunos()">Importar Alunos</button>
     </div>
 
+    <!-- Nova seção: Import de dados com coins -->
+    <div class="import-section">
+      <label class="upload-label">Importar dados com coins (nome + quantidade):</label>
+      <div class="file-upload-wrapper">
+        <input type="file" id="fileUploadData" accept=".txt" onchange="mostrarNomeArquivoData()" />
+        <button type="button" onclick="document.getElementById('fileUploadData').click()" class="import-button">
+          Escolher Arquivo
+        </button>
+        <span id="nome-arquivo-data" class="file-name">Nenhum arquivo selecionado</span>
+      </div>
+      <button class="import-button" onclick="importarDadosComCoins()">Importar Dados</button>
+    </div>
+
     <!-- Ação em grupo -->
     <div class="group-action">
       <label for="coinsGroup">Valor para todos da turma:</label>
@@ -155,7 +60,10 @@
     <!-- Formulário individual -->
     <div class="input-section">
       <label for="name">Nome:</label>
-      <input id="name" type="text" placeholder="Digite o nome" />
+      <div class="autocomplete-container">
+        <input id="name" type="text" placeholder="Digite o nome" autocomplete="off" />
+        <div id="autocomplete-list" class="autocomplete-list"></div>
+      </div>
 
       <label for="coins">Coins:</label>
       <input id="coins" type="number" placeholder="Digite a quantidade" />
