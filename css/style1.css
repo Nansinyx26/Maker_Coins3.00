@@ -118,8 +118,11 @@ body {
     background: var(--gradient-secondary);
     border-bottom: 2px solid var(--border-accent);
     padding: 1.5rem 2rem;
-    position: sticky;
-    top: 0;
+    /* Remover sticky se quiser centralização total da tela */
+    position: relative; /* ou fixe se quiser ocupar a tela inteira */
+    display: flex;
+    justify-content: center; /* centraliza horizontal */
+    align-items: center;     /* centraliza vertical */
     z-index: 1000;
     backdrop-filter: blur(15px);
     box-shadow: 0 8px 32px var(--shadow-dark);
@@ -127,10 +130,9 @@ body {
 
 .header-content {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column; /* organiza logo e market ticker em coluna */
     align-items: center;
-    max-width: 1600px;
-    margin: 0 auto;
+    gap: 2rem; /* espaçamento entre logo e market ticker */
 }
 
 .logo-container {
