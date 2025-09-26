@@ -1,390 +1,63 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Maker Coin System - Crypto Exchange Terminal</title>
-  <link href="css/style.css" rel="stylesheet" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Atualizar Coins - 3º Ano</title>
+  <link href="css/style3ano.css" rel="stylesheet"/>
 </head>
 <body>
-  <!-- Matrix Rain Background -->
-  <div id="matrix-bg"></div>
-  
-  <!-- Header Dashboard -->
-  <header class="crypto-header">
-    <div class="header-content">
-      <div class="logo">
-   <img src="img/MKR.png" alt="Maker Coins Logo" class="logo-image">
-        <span>MAKER COIN</span>
-        <div class="logo-subtitle">EXCHANGE TERMINAL</div>
-      </div>
-      <div class="market-ticker">
-        <div class="ticker-item">
-          <span class="ticker-symbol">MKR</span>
-          <span class="ticker-price" id="mkr-price">$1,247.89</span>
-          <span class="ticker-change positive" id="mkr-change">+2.34%</span>
-        </div>
-      
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- Stats Dashboard -->
-  <div class="stats-dashboard">
-    <div class="stat-card">
-      <div class="stat-icon">
-        <i class="fas fa-users"></i>
-      </div>
-      <div class="stat-info">
-        <div class="stat-value" id="contador-nomes">0</div>
-        <div class="stat-label">Usuários Ativos</div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon">
-        <i class="fas fa-coins"></i>
-      </div>
-      <div class="stat-info">
-        <div class="stat-value" id="contador-coins">0</div>
-        <div class="stat-label">Total MKR Coins</div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon">
-        <i class="fas fa-chart-line"></i>
-      </div>
-      <div class="stat-info">
-        <div class="stat-value" id="system-status">98.7%</div>
-        <div class="stat-label">Sistema Online</div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon">
-        <i class="fas fa-server"></i>
-      </div>
-      <div class="stat-info">
-        <div class="stat-value">24/7</div>
-        <div class="stat-label">Uptime</div>
-      </div>
-    </div>
+  <div id="sala-info">
+    <span id="contador-nomes">Nomes: 0</span>
+    <span id="contador-coins">Coins: 0</span>
   </div>
 
-  <!-- Main Container -->
   <div class="container">
-    <div class="terminal-header">
-      <div class="terminal-controls">
-        <div class="control-button close"></div>
-        <div class="control-button minimize"></div>
-        <div class="control-button maximize"></div>
-      </div>
-      <div class="terminal-title">
-        <i class="fas fa-terminal"></i>
-        MKR COIN MANAGEMENT TERMINAL
-        <div class="network-status">
-          <span class="status-dot"></span>
-          NETWORK CONNECTED
-        </div>
-      </div>
+    <h1>Atualizar Coins - 3º Ano</h1>
+
+    <div id="turmas-3" class="turmas">
+      <button class="tab-button" onclick="setClass('3A')">3°A</button>
+      <button class="tab-button" onclick="setClass('3B')">3°B</button>
+      <button class="tab-button" onclick="setClass('3C')">3°C</button>
     </div>
 
-    <div class="terminal-content">
-      <h1 class="main-title">
-         <img src="img/MKR.png" alt="Maker Coins Logo" class="logo-image">
-        ATUALIZAR COINS
-        <div class="title-glow"></div>
-      </h1>
+    <div class="input-section">
+      <label for="name">Nome:</label>
+      <input id="name" type="text" placeholder="Digite o nome"/>
 
-      <!-- Class Selection Tabs -->
-      <div class="crypto-tabs">
-        <div class="tab-group">
-          <button class="crypto-tab" onclick="setClass('5A')" data-class="5A">
-            <i class="fas fa-graduation-cap"></i>
-            <span>5º A</span>
-            <div class="tab-indicator"></div>
-          </button>
-          <button class="crypto-tab" onclick="setClass('5B')" data-class="5B">
-            <i class="fas fa-graduation-cap"></i>
-            <span>5º B</span>
-            <div class="tab-indicator"></div>
-          </button>
-          <button class="crypto-tab" onclick="setClass('5C')" data-class="5C">
-            <i class="fas fa-graduation-cap"></i>
-            <span>5º C</span>
-            <div class="tab-indicator"></div>
-          </button>
-        </div>
-      </div>
+      <label for="coins">Coins (positivo ou negativo):</label>
+      <input id="coins" type="number" placeholder="Digite a quantidade"/>
 
-      <!-- Import Section -->
-      <div class="crypto-panel">
-        <div class="panel-header">
-          <i class="fas fa-upload"></i>
-          <span>IMPORTAR DADOS</span>
-          <div class="panel-status">
-            <span class="status-indicator ready"></span>
-            READY
-          </div>
-        </div>
-        <div class="panel-content">
-          <div class="import-group">
-            <label class="crypto-label">
-              <i class="fas fa-file-alt"></i>
-              Importar lista de alunos (.txt)
-            </label>
-            <div class="file-upload-container">
-              <input type="file" id="fileUpload" accept=".txt" onchange="mostrarNomeArquivo()" />
-              <button type="button" onclick="document.getElementById('fileUpload').click()" class="crypto-button secondary">
-                <i class="fas fa-folder-open"></i>
-                Escolher Arquivo
-              </button>
-              <span id="nome-arquivo" class="file-status">Nenhum arquivo selecionado</span>
-            </div>
-            <button class="crypto-button primary" onclick="importarAlunos()">
-              <i class="fas fa-download"></i>
-              Importar Alunos
-            </button>
-          </div>
-
-          <div class="import-group">
-            <label class="crypto-label">
-              <i class="fas fa-database"></i>
-              Importar dados com coins (nome + quantidade)
-            </label>
-            <div class="file-upload-container">
-              <input type="file" id="fileUploadData" accept=".txt" onchange="mostrarNomeArquivoData()" />
-              <button type="button" onclick="document.getElementById('fileUploadData').click()" class="crypto-button secondary">
-                <i class="fas fa-folder-open"></i>
-                Escolher Arquivo
-              </button>
-              <span id="nome-arquivo-data" class="file-status">Nenhum arquivo selecionado</span>
-            </div>
-            <button class="crypto-button primary" onclick="importarDadosComCoins()">
-              <i class="fas fa-database"></i>
-              Importar Dados
-            </button>
-          </div>
-        </div>
-      </div>
-
-      
-
-      <!-- Group Actions -->
-      <div class="crypto-panel">
-        <div class="panel-header">
-          <i class="fas fa-users-cog"></i>
-          <span>AÇÕES EM GRUPO</span>
-          <div class="panel-status">
-            <span class="status-indicator warning"></span>
-            CAUTION
-          </div>
-        </div>
-        <div class="panel-content">
-          <div class="group-action-container">
-            <div class="input-group">
-              <label class="crypto-label">
-                <i class="fas fa-coins"></i>
-                Valor para toda a turma
-              </label>
-              <input id="coinsGroup" type="number" class="crypto-input" placeholder="Digite a quantidade" />
-            </div>
-            <div class="action-buttons">
-              <button class="crypto-button success" onclick="alterarTodos('add')">
-                <i class="fas fa-plus"></i>
-                Adicionar para Todos
-              </button>
-              <button class="crypto-button danger" onclick="alterarTodos('remove')">
-                <i class="fas fa-minus"></i>
-                Remover de Todos
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Individual Form -->
-      <div class="crypto-panel">
-        <div class="panel-header">
-          <i class="fas fa-user-edit"></i>
-          <span>TRANSAÇÃO INDIVIDUAL</span>
-          <div class="panel-status">
-            <span class="status-indicator active"></span>
-            ACTIVE
-          </div>
-        </div>
-        <div class="panel-content">
-          <div class="form-container">
-            <div class="input-group">
-              <label class="crypto-label">
-                <i class="fas fa-user"></i>
-                Nome do Usuário
-              </label>
-              <div class="autocomplete-container">
-                <input id="name" type="text" class="crypto-input" placeholder="Digite o nome" autocomplete="off" />
-                <div id="autocomplete-list" class="autocomplete-list"></div>
-              </div>
-            </div>
-
-            <div class="input-group">
-              <label class="crypto-label">
-                <i class="fas fa-coins"></i>
-                Quantidade MKR Coins
-              </label>
-              <input id="coins" type="number" class="crypto-input" placeholder="Digite a quantidade" />
-            </div>
-
-            <div class="checkbox-group">
-              <label class="crypto-checkbox">
-                <input type="checkbox" id="isNegative" onchange="toggleJustificativa()" />
-                <span class="checkmark"></span>
-                <i class="fas fa-exclamation-triangle"></i>
-                Transação Negativa (Penalidade)
-              </label>
-            </div>
-
-            <div id="justificativa-container" class="justification-container">
-              <label class="crypto-label">
-                <i class="fas fa-file-alt"></i>
-                Justificativa da Penalidade
-              </label>
-              <textarea id="justificativa" class="crypto-textarea" rows="3" placeholder="Descreva o motivo da penalidade"></textarea>
-            </div>
-
-            <div class="action-buttons">
-              <button class="crypto-button primary large" onclick="saveData()">
-                <i class="fas fa-save"></i>
-                Executar Transação
-              </button>
-              <button class="crypto-button secondary" onclick="window.location.href='frontend.html'">
-                <i class="fas fa-chart-bar"></i>
-                Ver Ranking
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Alert Messages -->
-      <div class="alert-container" id="alert"></div>
-
-      <!-- Saved Data Section -->
-      <div class="crypto-panel">
-        <div class="panel-header">
-          <i class="fas fa-database"></i>
-          <span>DADOS SALVOS</span>
-          <div class="panel-status">
-            <span class="status-indicator success"></span>
-            SYNCED
-          </div>
-        </div>
-        <div class="panel-content">
-          <div id="savedData" class="saved-data-container"></div>
-        </div>
-      </div>
-
-      <!-- History Section -->
-      <div class="crypto-panel">
-        <div class="panel-header">
-          <i class="fas fa-history"></i>
-          <span>HISTÓRICO DE TRANSAÇÕES</span>
-          <div class="panel-status">
-            <span class="status-indicator info"></span>
-            LOG
-          </div>
-        </div>
-        <div class="panel-content">
-          <div class="input-group">
-            <label class="crypto-label">
-              <i class="fas fa-search"></i>
-              Pesquisar histórico por usuário
-            </label>
-            <div class="search-container">
-              <input id="pesquisa" type="text" class="crypto-input" placeholder="Digite o nome do usuário" />
-              <button class="crypto-button primary" onclick="mostrarHistorico()">
-                <i class="fas fa-search"></i>
-                Buscar
-              </button>
-            </div>
-          </div>
-          <div id="historicoAluno" class="history-container"></div>
-        </div>
-      </div>
+      <button onclick="saveData()">Salvar</button>
+      <button onclick="window.location.href='frontend3.html'">Ver Leaderboard</button>
     </div>
+<div style="display: flex; align-items: center; gap: 0.5rem;">
+  <input id="coins" type="number" placeholder="Digite a quantidade" style="flex: 1;" />
+  <label style="font-size: 0.9rem;">
+    <input type="checkbox" id="isNegative" onchange="toggleJustificativa()" />
+    Negativo
+  </label>
+</div>
+
+<div id="justificativa-container" style="display: none; margin-top: 1rem;">
+  <label for="justificativa">Justificativa pelo negativo:</label>
+  <textarea id="justificativa" rows="3" placeholder="Descreva o motivo da penalidade" style="width: 100%; padding: 0.5rem;"></textarea>
+</div>
+    <p class="alert" id="alert"></p>
+
+    <h2>Dados Salvos:</h2>
+    <div id="savedData"></div>
+
+    <div class="input-section">
+      <label for="pesquisa">Pesquisar histórico por nome:</label>
+      <input id="pesquisa" type="text" placeholder="Digite o nome do aluno"/>
+      <button onclick="mostrarHistorico()">Ver Histórico</button>
+    </div>
+
+    <div id="historicoAluno"></div>
+    <button id="export-button" onclick="exportToTXT()">Exportar TXT</button>
   </div>
 
-  <!-- Export Button -->
-  <button id="export-button" class="floating-button" onclick="exportToTXT()">
-    <i class="fas fa-download"></i>
-    <span>Exportar</span>
-  </button>
-
-  <!-- Live Terminal -->
-  <div id="live-terminal" class="live-terminal minimized">
-    <div class="terminal-header-mini" onclick="toggleTerminal()">
-      <div class="terminal-controls-mini">
-        <div class="control-button-mini close" onclick="event.stopPropagation(); closeTerminal()"></div>
-        <div class="control-button-mini minimize" onclick="event.stopPropagation(); minimizeTerminal()"></div>
-        <div class="control-button-mini maximize" onclick="event.stopPropagation(); maximizeTerminal()"></div>
-      </div>
-      <div class="terminal-title-mini">
-        <i class="fas fa-terminal"></i>
-        System Monitor
-        <div class="terminal-status">
-          <span class="status-dot active"></span>
-        </div>
-      </div>
-    </div>
-    <div class="terminal-body">
-      <div class="terminal-output" id="terminal-output">
-        <div class="terminal-line">
-          <span class="timestamp">[2024-01-20 10:30:45]</span>
-          <span class="system-msg">Sistema iniciado com sucesso</span>
-        </div>
-        <div class="terminal-line">
-          <span class="timestamp">[2024-01-20 10:30:46]</span>
-          <span class="info-msg">Conectado à blockchain MakerCoin</span>
-        </div>
-        <div class="terminal-line">
-          <span class="timestamp">[2024-01-20 10:30:47]</span>
-          <span class="success-msg">Wallet initialized - Balance: 0 MKR</span>
-        </div>
-      </div>
-      <div class="terminal-input-line">
-        <span class="terminal-prompt">admin@makercoin:~$</span>
-        <input type="text" class="terminal-input" placeholder="Digite um comando..." />
-        <span class="cursor">_</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Floating Action Menu -->
-  <div class="fab-container">
-    <div class="fab-main" onclick="toggleFabMenu()">
-      <i class="fas fa-cog"></i>
-    </div>
-    <div class="fab-menu">
-      <button class="fab-item" onclick="refreshData()" title="Atualizar Dados">
-        <i class="fas fa-sync-alt"></i>
-      </button>
-      <button class="fab-item" onclick="backupData()" title="Backup">
-        <i class="fas fa-shield-alt"></i>
-      </button>
-      <button class="fab-item" onclick="toggleTheme()" title="Tema">
-        <i class="fas fa-palette"></i>
-      </button>
-      <button class="fab-item" onclick="showSettings()" title="Configurações">
-        <i class="fas fa-sliders-h"></i>
-      </button>
-    </div>
-  </div>
-
-  <!-- Network Status Indicator -->
-  <div class="network-indicator">
-    <div class="network-dot"></div>
-    <span>BLOCKCHAIN CONNECTED</span>
-  </div>
-
-  <script src="js/atualizacao.js"></script>
+  <script src="js/atualizacao3.js"></script>
 </body>
 </html>
