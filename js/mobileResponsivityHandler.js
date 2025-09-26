@@ -1,10 +1,9 @@
 /**
- * Mobile Detection and Responsivity Handler
- * Automatically detects mobile devices and activates responsive features
- * Compatible with Maker Coins System
+ * Sistema Mobile Responsivo - JavaScript
+ * Funcional para qualquer dispositivo móvel
  */
 
-class MobileResponsivityHandler {
+class MobileSystem {
     constructor() {
         this.deviceInfo = {
             isMobile: false,
@@ -14,18 +13,16 @@ class MobileResponsivityHandler {
             isIOS: false,
             isAndroid: false,
             orientation: 'portrait',
-            viewport: { width: 0, height: 0 },
-            pixelRatio: window.devicePixelRatio || 1
+            viewport: { width: 0, height: 0 }
         };
         
         this.breakpoints = {
             mobile: 768,
-            tablet: 1024,
-            desktop: 1200
+            tablet: 1024
         };
         
-        this.touchHandlers = new Map();
         this.resizeTimeout = null;
+        this.orientationTimeout = null;
         this.keyboardTimeout = null;
         this.initialViewportHeight = window.innerHeight;
         
@@ -33,87 +30,72 @@ class MobileResponsivityHandler {
     }
 
     /**
-     * Initialize the mobile handler
+     * Inicializar sistema
      */
     init() {
+        console.log('📱 Inicializando Mobile System...');
+        
         this.detectDevice();
         this.setDeviceClasses();
         this.setupEventListeners();
-        this.loadResponsiveCSS();
-        this.optimizeForDevice();
+        this.setupTouchFeedback();
+        this.handleOrientation();
+        this.optimizePerformance();
+        this.setupKeyboardDetection();
         
-        // Dispatch ready event
-        this.dispatchEvent('mobile-handler-ready', this.deviceInfo);
-        
-        console.log('🔱 Mobile Responsivity Handler initialized:', this.deviceInfo);
+        console.log('✅ Mobile System ativo:', this.deviceInfo);
     }
 
     /**
-     * Detect device type and capabilities
+     * Detectar tipo de dispositivo
      */
     detectDevice() {
         const userAgent = navigator.userAgent.toLowerCase();
         const viewport = this.getViewportSize();
         
-        // Device type detection
-        this.deviceInfo.isMobile = this.detectMobile(userAgent, viewport);
-        this.deviceInfo.isTablet = this.detectTablet(userAgent, viewport);
-        this.deviceInfo.isDesktop = !this.deviceInfo.isMobile && !this.deviceInfo.isTablet;
+        // Detecção básica
+        this.deviceInfo.isMobile = viewport.width <= this.breakpoints.mobile;
+        this.deviceInfo.isTablet = viewport.width > this.breakpoints.mobile && 
+                                  viewport.width <= this.breakpoints.tablet;
+        this.deviceInfo.isDesktop = viewport.width > this.breakpoints.tablet;
         
-        // Touch capability
-        this.deviceInfo.isTouchDevice = this.detectTouchDevice();
-        
-        // OS detection
+        // Touch e SO
+        this.deviceInfo.isTouchDevice = 'ontouchstart' in window;
         this.deviceInfo.isIOS = /iphone|ipad|ipod/i.test(userAgent);
         this.deviceInfo.isAndroid = /android/i.test(userAgent);
         
-        // Orientation and viewport
+        // Orientação e viewport
         this.deviceInfo.orientation = this.getOrientation();
         this.deviceInfo.viewport = viewport;
     }
 
-    detectMobile(userAgent, viewport) {
-        const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
-        return mobileRegex.test(userAgent) || viewport.width <= this.breakpoints.mobile;
-    }
-
-    detectTablet(userAgent, viewport) {
-        const tabletRegex = /ipad|android(?!.*mobile)|tablet/i;
-        return tabletRegex.test(userAgent) && 
-               viewport.width > this.breakpoints.mobile && 
-               viewport.width <= this.breakpoints.tablet;
-    }
-
-    detectTouchDevice() {
-        return 'ontouchstart' in window || 
-               navigator.maxTouchPoints > 0 || 
-               navigator.msMaxTouchPoints > 0;
-    }
-
-    getOrientation() {
-        return window.innerHeight > window.innerWidth ? 'portrait' : 'landscape';
-    }
-
+    /**
+     * Obter tamanho do viewport
+     */
     getViewportSize() {
         return {
             width: window.innerWidth,
-            height: window.innerHeight,
-            visualWidth: window.visualViewport?.width || window.innerWidth,
-            visualHeight: window.visualViewport?.height || window.innerHeight
+            height: window.innerHeight
         };
     }
 
     /**
-     * Set CSS classes based on device detection
+     * Obter orientação
+     */
+    getOrientation() {
+        return window.innerHeight > window.innerWidth ? 'portrait' : 'landscape';
+    }
+
+    /**
+     * Definir classes CSS baseadas no dispositivo
      */
     setDeviceClasses() {
         const body = document.body;
-        const html = document.documentElement;
         
-        // Remove existing classes
-        body.className = body.className.replace(/\b(is-mobile|is-tablet|is-desktop|is-touch|is-ios|is-android|orientation-\w+)\b/g, '');
+        // Remover classes existentes
+        body.classList.remove('is-mobile', 'is-tablet', 'is-desktop', 'is-touch', 'is-ios', 'is-android');
         
-        // Add device classes
+        // Adicionar classes do dispositivo
         if (this.deviceInfo.isMobile) body.classList.add('is-mobile');
         if (this.deviceInfo.isTablet) body.classList.add('is-tablet');
         if (this.deviceInfo.isDesktop) body.classList.add('is-desktop');
@@ -121,161 +103,157 @@ class MobileResponsivityHandler {
         if (this.deviceInfo.isIOS) body.classList.add('is-ios');
         if (this.deviceInfo.isAndroid) body.classList.add('is-android');
         
-        body.classList.add(`orientation-${this.deviceInfo.orientation}`);
+        // Ajustar fonte base
+        this.adjustBaseFontSize();
         
-        // Set CSS custom properties
-        html.style.setProperty('--viewport-width', this.deviceInfo.viewport.width + 'px');
-        html.style.setProperty('--viewport-height', this.deviceInfo.viewport.height + 'px');
-        html.style.setProperty('--pixel-ratio', this.deviceInfo.pixelRatio);
-        
-        // Set data attributes
-        body.dataset.device = this.deviceInfo.isMobile ? 'mobile' : this.deviceInfo.isTablet ? 'tablet' : 'desktop';
-        body.dataset.orientation = this.deviceInfo.orientation;
-        body.dataset.touch = this.deviceInfo.isTouchDevice;
+        console.log('🏷️ Classes aplicadas:', {
+            mobile: this.deviceInfo.isMobile,
+            tablet: this.deviceInfo.isTablet,
+            desktop: this.deviceInfo.isDesktop
+        });
     }
 
     /**
-     * Load responsive CSS dynamically if needed
+     * Ajustar tamanho da fonte base
      */
-    loadResponsiveCSS() {
-        if (!this.deviceInfo.isMobile && !this.deviceInfo.isTablet) return;
+    adjustBaseFontSize() {
+        const html = document.documentElement;
         
-        // Check if mobile CSS is already loaded
-        const existingCSS = document.querySelector('link[data-mobile-css]');
-        if (existingCSS) return;
-        
-        // Create and load mobile CSS
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'css/mobile-responsive.css';
-        link.dataset.mobileCss = 'true';
-        link.onload = () => console.log('📱 Mobile CSS loaded');
-        link.onerror = () => console.warn('⚠️ Mobile CSS failed to load');
-        
-        document.head.appendChild(link);
+        if (this.deviceInfo.isMobile) {
+            html.style.fontSize = this.deviceInfo.viewport.width < 480 ? '14px' : '15px';
+        } else if (this.deviceInfo.isTablet) {
+            html.style.fontSize = '15px';
+        } else {
+            html.style.fontSize = '16px';
+        }
     }
 
     /**
-     * Setup all event listeners
+     * Configurar listeners de eventos
      */
     setupEventListeners() {
-        // Resize and orientation change
+        // Resize da janela
         window.addEventListener('resize', this.handleResize.bind(this));
+        
+        // Mudança de orientação
         window.addEventListener('orientationchange', this.handleOrientationChange.bind(this));
         
-        // Touch events
-        if (this.deviceInfo.isTouchDevice) {
-            this.setupTouchHandlers();
-        }
-        
-        // Keyboard detection for mobile
-        if (this.deviceInfo.isMobile) {
-            this.setupKeyboardDetection();
-        }
-        
-        // Visual viewport for modern browsers
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', this.handleVisualViewportResize.bind(this));
-        }
-        
-        // Page visibility for mobile optimization
+        // Visibilidade da página
         document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
+        
+        console.log('👂 Event listeners configurados');
     }
 
     /**
-     * Handle window resize
+     * Tratar redimensionamento
      */
     handleResize() {
         clearTimeout(this.resizeTimeout);
         this.resizeTimeout = setTimeout(() => {
-            const oldViewport = this.deviceInfo.viewport;
-            const newViewport = this.getViewportSize();
-            const oldOrientation = this.deviceInfo.orientation;
-            const newOrientation = this.getOrientation();
+            const oldDevice = { ...this.deviceInfo };
             
-            // Update device info
-            this.deviceInfo.viewport = newViewport;
-            this.deviceInfo.orientation = newOrientation;
-            
-            // Re-detect device type based on new size
-            const wasMobile = this.deviceInfo.isMobile;
             this.detectDevice();
             
-            // Update classes if device type changed
-            if (wasMobile !== this.deviceInfo.isMobile) {
+            // Se mudou tipo de dispositivo, reconfigurar
+            if (oldDevice.isMobile !== this.deviceInfo.isMobile ||
+                oldDevice.isTablet !== this.deviceInfo.isTablet) {
                 this.setDeviceClasses();
-                this.loadResponsiveCSS();
+                this.adjustForDeviceChange();
             }
             
-            // Update CSS custom properties
-            document.documentElement.style.setProperty('--viewport-width', newViewport.width + 'px');
-            document.documentElement.style.setProperty('--viewport-height', newViewport.height + 'px');
+            this.adjustGridColumns();
             
-            // Handle orientation change
-            if (oldOrientation !== newOrientation) {
-                this.handleOrientationSpecificChanges(newOrientation);
-            }
-            
-            // Dispatch events
-            this.dispatchEvent('viewport-change', {
-                old: oldViewport,
-                new: newViewport,
-                orientation: newOrientation
-            });
-            
+            console.log('📏 Resize detectado:', this.deviceInfo.viewport);
         }, 250);
     }
 
     /**
-     * Handle orientation change
+     * Tratar mudança de orientação
      */
     handleOrientationChange() {
-        setTimeout(() => {
+        clearTimeout(this.orientationTimeout);
+        this.orientationTimeout = setTimeout(() => {
+            const oldOrientation = this.deviceInfo.orientation;
             const newOrientation = this.getOrientation();
             
-            if (this.deviceInfo.orientation !== newOrientation) {
-                document.body.classList.remove(`orientation-${this.deviceInfo.orientation}`);
+            if (oldOrientation !== newOrientation) {
+                this.deviceInfo.orientation = newOrientation;
+                document.body.classList.remove(`orientation-${oldOrientation}`);
                 document.body.classList.add(`orientation-${newOrientation}`);
                 
-                this.deviceInfo.orientation = newOrientation;
-                this.handleOrientationSpecificChanges(newOrientation);
+                this.adjustForOrientation(newOrientation);
                 
-                this.dispatchEvent('orientation-change', {
-                    orientation: newOrientation,
-                    viewport: this.getViewportSize()
-                });
+                console.log('🔄 Orientação mudou para:', newOrientation);
             }
         }, 100);
     }
 
     /**
-     * Handle orientation-specific changes
+     * Tratar orientação
      */
-    handleOrientationSpecificChanges(orientation) {
+    handleOrientation() {
+        document.body.classList.add(`orientation-${this.deviceInfo.orientation}`);
+        this.adjustForOrientation(this.deviceInfo.orientation);
+    }
+
+    /**
+     * Ajustar para mudança de dispositivo
+     */
+    adjustForDeviceChange() {
+        if (this.deviceInfo.isMobile) {
+            this.optimizeForMobile();
+        } else {
+            this.optimizeForDesktop();
+        }
+    }
+
+    /**
+     * Ajustar colunas do grid
+     */
+    adjustGridColumns() {
+        const statsGrid = document.querySelector('.stats-dashboard');
+        if (!statsGrid) return;
+        
+        const isLandscape = this.deviceInfo.orientation === 'landscape';
+        const width = this.deviceInfo.viewport.width;
+        
+        if (width <= 480 && !isLandscape) {
+            statsGrid.style.gridTemplateColumns = '1fr';
+        } else if (width <= 768 && isLandscape) {
+            statsGrid.style.gridTemplateColumns = 'repeat(4, 1fr)';
+        } else if (width <= 768) {
+            statsGrid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+        } else {
+            statsGrid.style.removeProperty('grid-template-columns');
+        }
+    }
+
+    /**
+     * Ajustar para orientação
+     */
+    adjustForOrientation(orientation) {
         if (!this.deviceInfo.isMobile) return;
         
+        this.adjustGridColumns();
+        
+        // Ajustar elementos específicos
         const elements = {
-            statsPanel: document.querySelector('.stats-panel'),
-            sortControls: document.querySelector('.sort-controls'),
+            header: document.querySelector('.crypto-header'),
             terminal: document.querySelector('.live-terminal'),
-            fabMenu: document.querySelector('.fab-container')
+            floating: document.querySelector('.floating-button')
         };
         
         if (orientation === 'landscape') {
-            // Landscape optimizations
-            if (elements.statsPanel) {
-                elements.statsPanel.style.setProperty('flex-direction', 'row', 'important');
+            if (elements.header) {
+                elements.header.style.padding = '0.2rem 0.5rem';
             }
-            
             if (elements.terminal) {
-                elements.terminal.style.maxHeight = '200px';
+                elements.terminal.style.maxHeight = '150px';
             }
         } else {
-            // Portrait optimizations
-            if (elements.statsPanel) {
-                elements.statsPanel.style.removeProperty('flex-direction');
+            if (elements.header) {
+                elements.header.style.removeProperty('padding');
             }
-            
             if (elements.terminal) {
                 elements.terminal.style.removeProperty('max-height');
             }
@@ -283,158 +261,116 @@ class MobileResponsivityHandler {
     }
 
     /**
-     * Setup touch event handlers
+     * Configurar feedback de toque
      */
-    setupTouchHandlers() {
-        // Add touch feedback to interactive elements
-        const touchElements = document.querySelectorAll(`
-            .crypto-button, .nav-button, .class-tab, .sort-btn,
-            .user-card, .autocomplete-item, .terminal-tab,
-            .fab-main, .fab-item, .crypto-tab
-        `);
+    setupTouchFeedback() {
+        if (!this.deviceInfo.isTouchDevice) return;
         
-        touchElements.forEach(element => {
-            this.addTouchFeedback(element);
+        const touchSelectors = [
+            '.crypto-button',
+            '.crypto-tab',
+            '.user-card',
+            '.ticker-item',
+            '.stat-card',
+            '.floating-button'
+        ];
+        
+        touchSelectors.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(el => this.addTouchFeedback(el));
         });
         
-        // Optimize scrolling
-        this.optimizeScrolling();
-        
-        // Add swipe gestures where appropriate
-        this.addSwipeGestures();
+        console.log('👆 Touch feedback configurado');
     }
 
     /**
-     * Add touch feedback to elements
+     * Adicionar feedback de toque a elemento
      */
     addTouchFeedback(element) {
-        if (this.touchHandlers.has(element)) return;
+        let touchStartTime = 0;
         
-        let touchStartTime, touchStartPos;
-        
-        const touchStart = (e) => {
+        const handleTouchStart = (e) => {
             touchStartTime = Date.now();
-            const touch = e.touches[0];
-            touchStartPos = { x: touch.clientX, y: touch.clientY };
-            
-            element.classList.add('touch-active');
-            this.createRippleEffect(element, touch.clientX, touch.clientY);
+            element.style.transform = 'scale(0.95)';
+            element.style.transition = 'transform 0.1s ease';
         };
         
-        const touchEnd = (e) => {
-            const duration = Date.now() - touchStartTime;
+        const handleTouchEnd = (e) => {
+            const touchDuration = Date.now() - touchStartTime;
             
-            setTimeout(() => element.classList.remove('touch-active'), 150);
+            setTimeout(() => {
+                element.style.transform = '';
+                element.style.transition = '';
+            }, 150);
             
-            // Prevent accidental taps
-            if (duration < 50) {
+            // Prevenir taps acidentais muito rápidos
+            if (touchDuration < 50) {
                 e.preventDefault();
             }
         };
         
-        const touchMove = (e) => {
-            const touch = e.touches[0];
-            const distance = Math.sqrt(
-                Math.pow(touch.clientX - touchStartPos.x, 2) + 
-                Math.pow(touch.clientY - touchStartPos.y, 2)
-            );
-            
-            if (distance > 20) {
-                element.classList.remove('touch-active');
-            }
+        const handleTouchCancel = () => {
+            element.style.transform = '';
+            element.style.transition = '';
         };
         
-        element.addEventListener('touchstart', touchStart, { passive: true });
-        element.addEventListener('touchend', touchEnd, { passive: false });
-        element.addEventListener('touchmove', touchMove, { passive: true });
-        
-        this.touchHandlers.set(element, { touchStart, touchEnd, touchMove });
+        element.addEventListener('touchstart', handleTouchStart, { passive: true });
+        element.addEventListener('touchend', handleTouchEnd, { passive: false });
+        element.addEventListener('touchcancel', handleTouchCancel, { passive: true });
     }
 
     /**
-     * Create ripple effect for touch feedback
-     */
-    createRippleEffect(element, x, y) {
-        const ripple = document.createElement('div');
-        const rect = element.getBoundingClientRect();
-        const size = Math.max(rect.width, rect.height);
-        
-        ripple.className = 'touch-ripple';
-        ripple.style.cssText = `
-            position: absolute;
-            width: ${size}px;
-            height: ${size}px;
-            left: ${x - rect.left - size / 2}px;
-            top: ${y - rect.top - size / 2}px;
-            background: rgba(0, 255, 136, 0.3);
-            border-radius: 50%;
-            transform: scale(0);
-            animation: ripple-expand 0.6s ease-out;
-            pointer-events: none;
-            z-index: 1000;
-        `;
-        
-        if (getComputedStyle(element).position === 'static') {
-            element.style.position = 'relative';
-        }
-        element.style.overflow = 'hidden';
-        
-        element.appendChild(ripple);
-        setTimeout(() => ripple.remove(), 600);
-    }
-
-    /**
-     * Setup virtual keyboard detection
+     * Configurar detecção de teclado virtual
      */
     setupKeyboardDetection() {
-        const handleKeyboard = () => {
+        if (!this.deviceInfo.isMobile) return;
+        
+        const handleViewportChange = () => {
             clearTimeout(this.keyboardTimeout);
             this.keyboardTimeout = setTimeout(() => {
-                const currentHeight = window.visualViewport?.height || window.innerHeight;
+                const currentHeight = window.innerHeight;
                 const heightDiff = this.initialViewportHeight - currentHeight;
                 const isKeyboardOpen = heightDiff > 150;
                 
                 document.body.classList.toggle('keyboard-open', isKeyboardOpen);
                 this.adjustForKeyboard(isKeyboardOpen);
                 
-                this.dispatchEvent('keyboard-toggle', { 
-                    isOpen: isKeyboardOpen, 
-                    heightDiff 
-                });
+                console.log(isKeyboardOpen ? '⌨️ Teclado aberto' : '⌨️ Teclado fechado');
             }, 100);
         };
         
+        // Usar Visual Viewport API se disponível
         if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', handleKeyboard);
+            window.visualViewport.addEventListener('resize', handleViewportChange);
         } else {
-            window.addEventListener('resize', handleKeyboard);
+            window.addEventListener('resize', handleViewportChange);
         }
         
-        // Prevent zoom on input focus (iOS)
+        // Prevenir zoom em inputs iOS
         this.preventInputZoom();
     }
 
     /**
-     * Adjust layout when virtual keyboard opens/closes
+     * Ajustar para teclado virtual
      */
     adjustForKeyboard(isOpen) {
         const elements = {
             terminal: document.querySelector('.live-terminal'),
-            fab: document.querySelector('.fab-container'),
-            floatingBtn: document.querySelector('.floating-button')
+            floating: document.querySelector('.floating-button')
         };
         
         Object.values(elements).forEach(el => {
             if (el) el.style.display = isOpen ? 'none' : '';
         });
         
+        // Scroll para input ativo
         if (isOpen) {
-            const activeElement = document.activeElement;
-            if (activeElement?.matches('input, textarea')) {
+            const activeInput = document.activeElement;
+            if (activeInput && activeInput.matches('input, textarea')) {
                 setTimeout(() => {
-                    activeElement.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'center' 
+                    activeInput.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
                     });
                 }, 300);
             }
@@ -442,7 +378,7 @@ class MobileResponsivityHandler {
     }
 
     /**
-     * Prevent zoom on input focus for iOS
+     * Prevenir zoom em inputs (iOS)
      */
     preventInputZoom() {
         if (!this.deviceInfo.isIOS) return;
@@ -456,13 +392,72 @@ class MobileResponsivityHandler {
     }
 
     /**
-     * Optimize scrolling for mobile
+     * Tratar mudança de visibilidade
+     */
+    handleVisibilityChange() {
+        if (document.hidden) {
+            this.pauseAnimations();
+        } else {
+            this.resumeAnimations();
+        }
+    }
+
+    /**
+     * Pausar animações quando página oculta
+     */
+    pauseAnimations() {
+        const animatedElements = document.querySelectorAll([
+            '.loading-spinner',
+            '.terminal-cursor',
+            '[data-animation]'
+        ].join(', '));
+        
+        animatedElements.forEach(el => {
+            el.style.animationPlayState = 'paused';
+        });
+    }
+
+    /**
+     * Retomar animações
+     */
+    resumeAnimations() {
+        const animatedElements = document.querySelectorAll([
+            '.loading-spinner',
+            '.terminal-cursor',
+            '[data-animation]'
+        ].join(', '));
+        
+        animatedElements.forEach(el => {
+            el.style.animationPlayState = 'running';
+        });
+    }
+
+    /**
+     * Otimizar performance
+     */
+    optimizePerformance() {
+        // Reduzir animações em mobile
+        if (this.deviceInfo.isMobile) {
+            document.documentElement.style.setProperty('--animation-duration', '0.2s');
+            document.documentElement.style.setProperty('--transition-duration', '0.15s');
+        }
+        
+        // Otimizar scroll
+        this.optimizeScrolling();
+        
+        console.log('⚡ Performance otimizada');
+    }
+
+    /**
+     * Otimizar scrolling
      */
     optimizeScrolling() {
-        const scrollContainers = document.querySelectorAll(`
-            .terminal-output, .autocomplete-list, .user-list,
-            .history-container, .notification-container
-        `);
+        const scrollContainers = document.querySelectorAll([
+            '.terminal-output',
+            '.market-ticker',
+            '.tab-group',
+            '.notification-container'
+        ].join(', '));
         
         scrollContainers.forEach(container => {
             container.style.webkitOverflowScrolling = 'touch';
@@ -471,218 +466,149 @@ class MobileResponsivityHandler {
     }
 
     /**
-     * Add swipe gestures for tab navigation
+     * Otimizar para mobile
      */
-    addSwipeGestures() {
-        const tabContainers = document.querySelectorAll('.crypto-tabs, .class-tabs');
-        
-        tabContainers.forEach(container => {
-            let startX, startY, endX, endY;
-            
-            container.addEventListener('touchstart', (e) => {
-                const touch = e.touches[0];
-                startX = touch.clientX;
-                startY = touch.clientY;
-            }, { passive: true });
-            
-            container.addEventListener('touchend', (e) => {
-                const touch = e.changedTouches[0];
-                endX = touch.clientX;
-                endY = touch.clientY;
-                
-                const deltaX = endX - startX;
-                const deltaY = endY - startY;
-                
-                // Only process horizontal swipes
-                if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
-                    const tabs = container.querySelectorAll('.crypto-tab, .class-tab');
-                    const activeTab = container.querySelector('.active');
-                    const activeIndex = Array.from(tabs).indexOf(activeTab);
-                    
-                    if (deltaX > 0 && activeIndex > 0) {
-                        // Swipe right - previous tab
-                        tabs[activeIndex - 1].click();
-                    } else if (deltaX < 0 && activeIndex < tabs.length - 1) {
-                        // Swipe left - next tab
-                        tabs[activeIndex + 1].click();
-                    }
-                }
-            }, { passive: true });
-        });
-    }
-
-    /**
-     * Handle visual viewport resize (modern browsers)
-     */
-    handleVisualViewportResize() {
-        const visualViewport = this.getViewportSize();
-        
-        document.documentElement.style.setProperty('--visual-viewport-width', visualViewport.visualWidth + 'px');
-        document.documentElement.style.setProperty('--visual-viewport-height', visualViewport.visualHeight + 'px');
-        
-        this.dispatchEvent('visual-viewport-change', visualViewport);
-    }
-
-    /**
-     * Handle page visibility change for mobile optimization
-     */
-    handleVisibilityChange() {
-        if (document.hidden) {
-            // Page is hidden - reduce activity
-            this.pauseAnimations();
-        } else {
-            // Page is visible - resume activity
-            this.resumeAnimations();
-        }
-    }
-
-    /**
-     * Pause animations and heavy operations when page is hidden
-     */
-    pauseAnimations() {
-        const animatedElements = document.querySelectorAll(`
-            #matrix-bg, .floating-icons, .particle,
-            .terminal-cursor, .loading-spinner
-        `);
-        
-        animatedElements.forEach(el => {
-            el.style.animationPlayState = 'paused';
-        });
-    }
-
-    /**
-     * Resume animations when page becomes visible
-     */
-    resumeAnimations() {
-        const animatedElements = document.querySelectorAll(`
-            #matrix-bg, .floating-icons, .particle,
-            .terminal-cursor, .loading-spinner
-        `);
-        
-        animatedElements.forEach(el => {
-            el.style.animationPlayState = 'running';
-        });
-    }
-
-    /**
-     * Device-specific optimizations
-     */
-    optimizeForDevice() {
-        if (this.deviceInfo.isMobile) {
-            this.optimizeForMobile();
-        }
-        
-        if (this.deviceInfo.isIOS) {
-            this.optimizeForIOS();
-        }
-        
-        if (this.deviceInfo.isAndroid) {
-            this.optimizeForAndroid();
-        }
-    }
-
     optimizeForMobile() {
-        // Reduce particle count for mobile
-        document.documentElement.style.setProperty('--particle-count', '10');
+        // Reduzir elementos pesados
+        document.documentElement.style.setProperty('--particle-count', '5');
         
-        // Optimize animations
-        document.documentElement.style.setProperty('--animation-speed', '0.5s');
-        
-        // Add mobile-specific styles
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes ripple-expand {
-                to { transform: scale(4); opacity: 0; }
-            }
-            
-            .touch-active {
-                transform: scale(0.98);
-                transition: transform 0.1s ease;
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
-    optimizeForIOS() {
-        // iOS-specific optimizations
-        document.body.style.webkitTouchCallout = 'none';
-        document.body.style.webkitUserSelect = 'none';
-        
-        // Fix iOS viewport issues
-        const viewport = document.querySelector('meta[name="viewport"]');
-        if (viewport) {
-            viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
-        }
-    }
-
-    optimizeForAndroid() {
-        // Android-specific optimizations
+        // Melhorar performance
         document.body.style.touchAction = 'manipulation';
         
-        // Improve Android scrolling
-        document.documentElement.style.scrollBehavior = 'smooth';
+        console.log('📱 Otimizado para mobile');
     }
 
     /**
-     * Utility methods
+     * Otimizar para desktop
      */
-    dispatchEvent(name, detail = null) {
-        window.dispatchEvent(new CustomEvent(`mobile-${name}`, { 
-            detail: detail || this.deviceInfo 
-        }));
+    optimizeForDesktop() {
+        // Restaurar elementos completos
+        document.documentElement.style.removeProperty('--particle-count');
+        
+        // Remover otimizações mobile
+        document.body.style.removeProperty('touch-action');
+        
+        console.log('🖥️ Otimizado para desktop');
     }
 
-    // Public API methods
+    /**
+     * Adicionar listeners dinâmicos para novos elementos
+     */
+    addDynamicListeners() {
+        // Observer para novos elementos
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === Node.ELEMENT_NODE && this.deviceInfo.isTouchDevice) {
+                        // Adicionar touch feedback a novos elementos
+                        const touchElements = node.querySelectorAll([
+                            '.crypto-button',
+                            '.crypto-tab',
+                            '.user-card',
+                            '.ticker-item'
+                        ].join(', '));
+                        
+                        touchElements.forEach(el => this.addTouchFeedback(el));
+                    }
+                });
+            });
+        });
+        
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+
+    /**
+     * API pública - Obter informações do dispositivo
+     */
     getDeviceInfo() {
         return { ...this.deviceInfo };
     }
 
-    isMobileDevice() {
+    /**
+     * API pública - Verificar se é mobile
+     */
+    isMobile() {
         return this.deviceInfo.isMobile;
     }
 
-    isTabletDevice() {
+    /**
+     * API pública - Verificar se é tablet
+     */
+    isTablet() {
         return this.deviceInfo.isTablet;
     }
 
-    isTouchSupported() {
+    /**
+     * API pública - Verificar se suporta toque
+     */
+    isTouchDevice() {
         return this.deviceInfo.isTouchDevice;
     }
 
-    getCurrentOrientation() {
+    /**
+     * API pública - Obter orientação atual
+     */
+    getOrientation() {
         return this.deviceInfo.orientation;
     }
 
-    getViewportInfo() {
-        return { ...this.deviceInfo.viewport };
+    /**
+     * API pública - Forçar redetecção
+     */
+    refresh() {
+        console.log('🔄 Atualizando detecção...');
+        this.detectDevice();
+        this.setDeviceClasses();
+        this.adjustGridColumns();
+        this.handleOrientation();
     }
 
-    // Clean up method
+    /**
+     * Limpar recursos
+     */
     destroy() {
         clearTimeout(this.resizeTimeout);
+        clearTimeout(this.orientationTimeout);
         clearTimeout(this.keyboardTimeout);
         
-        this.touchHandlers.forEach((handlers, element) => {
-            element.removeEventListener('touchstart', handlers.touchStart);
-            element.removeEventListener('touchend', handlers.touchEnd);
-            element.removeEventListener('touchmove', handlers.touchMove);
-        });
-        
-        this.touchHandlers.clear();
+        console.log('🗑️ Mobile System finalizado');
     }
 }
 
-// Auto-initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    window.mobileHandler = new MobileResponsivityHandler();
-});
-
-// Also initialize immediately if DOM is already loaded
-if (document.readyState !== 'loading') {
-    window.mobileHandler = new MobileResponsivityHandler();
+// Auto-inicializar quando DOM estiver pronto
+function initMobileSystem() {
+    if (typeof window !== 'undefined') {
+        window.mobileSystem = new MobileSystem();
+        
+        // API global simplificada
+        window.isMobile = () => window.mobileSystem.isMobile();
+        window.isTablet = () => window.mobileSystem.isTablet();
+        window.isTouchDevice = () => window.mobileSystem.isTouchDevice();
+    }
 }
 
-// Export for module usage
+// Inicializar
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMobileSystem);
+} else {
+    initMobileSystem();
+}
+
+// Reagir a mudanças de tamanho (debounced)
+let resizeTimer;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        if (window.mobileSystem) {
+            window.mobileSystem.refresh();
+        }
+    }, 250);
+});
+
+// Exportar para uso em módulos
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = MobileResponsivityHandler;
+    module.exports = MobileSystem;
 }
