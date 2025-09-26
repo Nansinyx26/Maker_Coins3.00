@@ -1,103 +1,80 @@
-// Modern Crypto Leaderboard JavaScript - Enhanced Frontend - VERSÃO CORRIGIDA
-let currentClass = '5A';
-let currentSort = 'coins';
-let priceUpdateInterval = null;
-let logUpdateInterval = null;
-let leaderboardData = [];
-let isLoading = false;
-
-// Crypto price simulation
-const marketData = {
-    mkr: { price: 1247.89, change: 2.34, symbol: 'MKR' },
-    edu: { price: 156.78, change: 5.67, symbol: 'EDU' }
-};
+// Modern Crypto Portal JavaScript - Enhanced Index
+let infoModalOpen = false;
+let statsUpdateInterval = null;
+let backgroundAnimationActive = true;
 
 /**
- * Utility Functions
+ * Authentication System
  */
-function removerAcentos(str) {
-    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
+function authenticate() {
+    const password = prompt('Digite a senha para acessar o painel de administração:');
+    const correctPassword = 'Mantra2222';
 
-function formatNumber(num) {
-    return new Intl.NumberFormat('pt-BR').format(num);
-}
-
-function formatCurrency(value) {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2
-    }).format(value);
-}
-
-function getCurrentTimestamp() {
-    return new Date().toLocaleString('pt-BR', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-    });
-}
-
-/**
- * Market Price Updates
- */
-function updateMarketPrices() {
-    Object.keys(marketData).forEach(crypto => {
-        const priceElement = document.getElementById(`${crypto}-live`);
+    if (password === correctPassword) {
+        showNotification('Acesso autorizado! Redirecionando...', 'success');
+        addSystemLog('Acesso administrativo autorizado', 'success');
         
-        if (priceElement) {
-            // Simulate price fluctuation (-1% to +1%)
-            const changePercent = (Math.random() - 0.5) * 2;
-            const currentPrice = marketData[crypto].price;
-            const newPrice = currentPrice * (1 + changePercent / 100);
-            
-            marketData[crypto].price = newPrice;
-            marketData[crypto].change = changePercent;
-            
-            priceElement.textContent = formatCurrency(newPrice);
-            
-            // Update change indicator
-            const changeSpan = priceElement.nextElementSibling;
-            if (changeSpan) {
-                changeSpan.textContent = `${changePercent > 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
-                changeSpan.className = `change ${changePercent > 0 ? 'positive' : 'negative'}`;
-            }
-        }
-    });
+        setTimeout(() => {
+            window.location.href = 'atualizacao.html';
+        }, 1000);
+    } else if (password !== null) { // User didn't cancel
+        showNotification('Senha incorreta. Acesso negado.', 'error');
+        addSystemLog('Tentativa de acesso negada - senha incorreta', 'warning');
+    }
 }
 
 /**
- * Notification System
+ * Enhanced Notification System
  */
-function showToast(message, type = 'info') {
-    const container = document.getElementById('toast-container');
-    if (!container) return;
+function showNotification(message, type = 'info', duration = 4000) {
+    const notification = document.createElement('div');
+    notification.className = `system-notification ${type}`;
     
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    
-    const icon = getToastIcon(type);
-    toast.innerHTML = `
-        <i class="fas ${icon}"></i>
-        <span>${message}</span>
-        <button onclick="this.parentElement.remove()">
-            <i class="fas fa-times"></i>
-        </button>
+    const icon = getNotificationIcon(type);
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas ${icon}"></i>
+            <div class="notification-text">
+                <strong>${type.charAt(0).toUpperCase() + type.slice(1)}</strong>
+                <p>${message}</p>
+            </div>
+            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
     `;
     
-    container.appendChild(toast);
+    // Position notifications
+    let container = document.querySelector('.notification-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'notification-container';
+        container.style.cssText = `
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            pointer-events: none;
+        `;
+        document.body.appendChild(container);
+    }
     
-    // Auto-remove after 4 seconds
+    notification.style.pointerEvents = 'all';
+    container.appendChild(notification);
+    
+    // Auto-remove
     setTimeout(() => {
-        if (toast.parentElement) {
-            toast.style.animation = 'slideOutRight 0.3s ease forwards';
-            setTimeout(() => toast.remove(), 300);
+        if (notification.parentElement) {
+            notification.style.animation = 'slideOutRight 0.3s ease forwards';
+            setTimeout(() => notification.remove(), 300);
         }
-    }, 4000);
+    }, duration);
 }
 
-function getToastIcon(type) {
+function getNotificationIcon(type) {
     switch (type) {
         case 'success': return 'fa-check-circle';
         case 'error': return 'fa-exclamation-circle';
@@ -107,908 +84,568 @@ function getToastIcon(type) {
 }
 
 /**
- * Loading System
+ * System Logging
  */
-function showLoading() {
-    const modal = document.getElementById('loading-modal');
-    if (modal) {
-        modal.style.display = 'flex';
-        isLoading = true;
-    }
-}
-
-function hideLoading() {
-    const modal = document.getElementById('loading-modal');
-    if (modal) {
-        modal.style.display = 'none';
-        isLoading = false;
-    }
-}
-
-/**
- * Mini Terminal Functions
- */
-function addLog(message, type = 'info') {
-    const logsContainer = document.getElementById('terminal-logs');
-    if (!logsContainer) return;
-    
-    const logLine = document.createElement('div');
-    logLine.className = 'log-line';
-    logLine.innerHTML = `
-        <span class="log-time">[${getCurrentTimestamp()}]</span>
-        <span class="log-msg ${type}">${message}</span>
-    `;
-    
-    logsContainer.appendChild(logLine);
-    logsContainer.scrollTop = logsContainer.scrollHeight;
-    
-    // Keep only last 50 logs
-    while (logsContainer.children.length > 50) {
-        logsContainer.removeChild(logsContainer.firstChild);
-    }
-}
-
-function toggleMiniTerminal() {
-    const terminal = document.getElementById('mini-terminal');
-    if (terminal) {
-        terminal.classList.toggle('collapsed');
-        const isCollapsed = terminal.classList.contains('collapsed');
-        addLog(`Terminal ${isCollapsed ? 'minimizado' : 'expandido'}`, 'info');
-    }
-}
-
-/**
- * Enhanced Class Management
- */
-function showLeaderboard(className) {
-    if (isLoading) return;
-    
-    showLoading();
-    currentClass = className;
-    
-    // Update tab appearance
-    updateClassButtons(className);
-    
-    // Simulate loading delay for better UX
-    setTimeout(() => {
-        displayLeaderboard();
-        hideLoading();
-        showToast(`Carregando dados da turma ${className}`, 'success');
-        addLog(`Turma ${className} selecionada`, 'success');
-    }, 800);
-}
-
-function updateClassButtons(className) {
-    document.querySelectorAll('.class-tab').forEach(tab => {
-        tab.classList.remove('active');
-        if (tab.getAttribute('onclick').includes(className)) {
-            tab.classList.add('active');
-        }
-    });
-}
-
-/**
- * Enhanced Sort Management
- */
-function toggleSort(sortType) {
-    currentSort = sortType;
-    updateSortButtons(sortType);
-    displayLeaderboard();
-    
-    const sortName = sortType === 'alphabetical' ? 'alfabética' : 'por coins';
-    showToast(`Ordenação alterada para ${sortName}`, 'info');
-    addLog(`Ordenação: ${sortName}`, 'info');
-}
-
-function updateSortButtons(sortType) {
-    const alphaButton = document.getElementById('sort-alpha');
-    const coinsButton = document.getElementById('sort-coins');
-    
-    if (alphaButton && coinsButton) {
-        alphaButton.classList.remove('active');
-        coinsButton.classList.remove('active');
-        
-        if (sortType === 'alphabetical') {
-            alphaButton.classList.add('active');
-        } else {
-            coinsButton.classList.add('active');
-        }
-    }
-}
-
-/**
- * Enhanced Leaderboard Display - CORREÇÃO DO TOTAL MKR
- */
-function displayLeaderboard() {
-    const leaderboard = document.getElementById('leaderboard');
-    if (!leaderboard) return;
-    
-    leaderboard.innerHTML = '';
-    
-    let totalNomes = 0;
-    let totalCoins = 0; // Esta variável vai armazenar o total correto
-    let students = [];
-    
-    // Collect student data - CORREÇÃO AQUI
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        
-        if (key.startsWith(currentClass) && !key.includes('_historico')) {
-            const name = key.split('_')[1];
-            const coinValue = localStorage.getItem(key);
-            const coins = parseInt(coinValue, 10) || 0; // Garantir que seja número
-            
-            // VALIDAÇÃO ADICIONAL - só conta se for um número válido
-            if (!isNaN(coins) && coinValue !== null && coinValue !== '') {
-                totalNomes++;
-                totalCoins += coins; // Soma direta sem problemas de tipo
-                
-                const displayName = formatStudentName(name);
-                students.push({
-                    name: displayName,
-                    coins: coins,
-                    originalName: name,
-                    key: key
-                });
-                
-                // Log para debug (opcional)
-                console.log(`Estudante: ${displayName}, Coins: ${coins}, Total atual: ${totalCoins}`);
-            }
-        }
-    }
-    
-    // Store for future use
-    leaderboardData = students;
-    
-    // Apply sorting
-    students = sortStudents(students, currentSort);
-    
-    // Create student cards
-    displayStudentCards(students);
-    
-    // Update counters - GARANTINDO QUE OS VALORES CORRETOS SEJAM PASSADOS
-    updateCounters(totalNomes, totalCoins);
-    
-    // Show empty state if needed
-    if (students.length === 0) {
-        displayEmptyMessage();
-    }
-    
-    // Log com valores finais para verificação
-    addLog(`${totalNomes} estudantes carregados da turma ${currentClass} - Total MKR: ${formatNumber(totalCoins)}`, 'info');
-    console.log(`TOTAL FINAL - Nomes: ${totalNomes}, Coins: ${totalCoins}`);
-}
-
-function formatStudentName(name) {
-    return name.charAt(0).toUpperCase() + name.slice(1).replace(/_/g, ' ');
-}
-
-function sortStudents(students, sortType) {
-    if (sortType === 'alphabetical') {
-        return students.sort((a, b) => 
-            a.name.localeCompare(b.name, 'pt-BR', {
-                sensitivity: 'base',
-                ignorePunctuation: true
-            })
-        );
-    } else {
-        return students.sort((a, b) => {
-            if (b.coins !== a.coins) {
-                return b.coins - a.coins;
-            }
-            return a.name.localeCompare(b.name, 'pt-BR', {
-                sensitivity: 'base',
-                ignorePunctuation: true
-            });
-        });
-    }
-}
-
-function displayStudentCards(students) {
-    const leaderboard = document.getElementById('leaderboard');
-    if (!leaderboard) return;
-    
-    students.forEach((student, index) => {
-        const userCard = document.createElement('div');
-        userCard.className = 'user-card';
-        
-        // Add special styling for top 3 positions when sorted by coins
-        if (currentSort === 'coins' && index < 3) {
-            userCard.classList.add(`rank-${index + 1}`);
-        }
-        
-        const positionBadge = createPositionBadge(index, currentSort);
-        const coinsClass = student.coins < 0 ? 'negative' : 'positive';
-        const coinIcon = student.coins < 0 ? 'fa-minus' : 'fa-coins';
-        
-        userCard.innerHTML = `
-            <div class="user-name">
-                ${positionBadge}
-                <span>${student.name}</span>
-            </div>
-            <div class="user-coins ${coinsClass}">
-                <i class="fas ${coinIcon}"></i>
-                ${formatNumber(student.coins)} MKR
-            </div>
-        `;
-        
-        // Add click event for student details
-        userCard.addEventListener('click', () => showStudentDetails(student));
-        
-        leaderboard.appendChild(userCard);
-    });
-}
-
-function createPositionBadge(index, sortType) {
-    if (sortType !== 'coins') return '';
-    
-    const position = index + 1;
-    let badgeClass = 'regular';
-    let badgeIcon = position;
-    
-    switch (position) {
-        case 1:
-            badgeClass = 'gold';
-            badgeIcon = '<i class="fas fa-crown"></i>';
-            break;
-        case 2:
-            badgeClass = 'silver';
-            badgeIcon = '<i class="fas fa-medal"></i>';
-            break;
-        case 3:
-            badgeClass = 'bronze';
-            badgeIcon = '<i class="fas fa-award"></i>';
-            break;
-    }
-    
-    return `<div class="position-badge ${badgeClass}">${badgeIcon}</div>`;
-}
-
-function showStudentDetails(student) {
-    const historyKey = `${student.key}_historico`;
-    const history = JSON.parse(localStorage.getItem(historyKey)) || [];
-    
-    let detailsHtml = `
-        <div class="student-details">
-            <h3><i class="fas fa-user"></i> ${student.name}</h3>
-            <div class="student-stats">
-                <div class="stat">
-                    <i class="fas fa-coins"></i>
-                    <span>Saldo Atual: ${formatNumber(student.coins)} MKR</span>
-                </div>
-                <div class="stat">
-                    <i class="fas fa-history"></i>
-                    <span>Transações: ${history.length}</span>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    showToast(detailsHtml, 'info');
-    addLog(`Detalhes visualizados: ${student.name}`, 'info');
-}
-
-/**
- * Enhanced Counter Update - CORREÇÃO DA ANIMAÇÃO
- */
-function updateCounters(totalNomes, totalCoins) {
-    const contadorNomes = document.getElementById('contador-nomes');
-    const contadorCoins = document.getElementById('contador-coins');
-    
-    // CORREÇÃO: Verificar se os elementos existem antes de atualizar
-    if (contadorNomes) {
-        console.log(`Atualizando contador de nomes para: ${totalNomes}`);
-        animateCounter(contadorNomes, totalNomes);
-    } else {
-        console.error('Elemento contador-nomes não encontrado no DOM');
-    }
-    
-    if (contadorCoins) {
-        console.log(`Atualizando contador de coins para: ${totalCoins}`);
-        animateCounter(contadorCoins, totalCoins);
-    } else {
-        console.error('Elemento contador-coins não encontrado no DOM');
-    }
-}
-
-/**
- * Enhanced Animation Counter - CORREÇÃO DA ANIMAÇÃO
- */
-function animateCounter(element, targetValue) {
-    // CORREÇÃO: Garantir que targetValue seja um número
-    const target = parseInt(targetValue, 10) || 0;
-    const currentValue = parseInt(element.textContent.replace(/[.,]/g, '')) || 0;
-    
-    console.log(`Animando de ${currentValue} para ${target}`);
-    
-    // Se os valores são iguais, não precisa animar
-    if (currentValue === target) {
-        element.textContent = formatNumber(target);
-        return;
-    }
-    
-    const difference = Math.abs(target - currentValue);
-    const increment = Math.max(1, Math.ceil(difference / 20));
-    
-    if (currentValue < target) {
-        const newValue = Math.min(currentValue + increment, target);
-        element.textContent = formatNumber(newValue);
-        if (newValue < target) {
-            setTimeout(() => animateCounter(element, target), 50);
-        }
-    } else if (currentValue > target) {
-        const newValue = Math.max(currentValue - increment, target);
-        element.textContent = formatNumber(newValue);
-        if (newValue > target) {
-            setTimeout(() => animateCounter(element, target), 50);
-        }
-    }
-}
-
-function displayEmptyMessage() {
-    const leaderboard = document.getElementById('leaderboard');
-    if (!leaderboard) return;
-    
-    leaderboard.innerHTML = `
-        <div class="empty-state">
-            <div class="empty-icon">
-                <i class="fas fa-users-slash"></i>
-            </div>
-            <h3>Nenhum estudante encontrado</h3>
-            <p>Esta turma ainda não possui estudantes cadastrados.</p>
-            <div class="empty-actions">
-                <button class="crypto-button secondary" onclick="refreshLeaderboard()">
-                    <i class="fas fa-sync-alt"></i>
-                    Atualizar
-                </button>
-                <button class="crypto-button primary" onclick="window.location.href='atualizacao.html'">
-                    <i class="fas fa-plus"></i>
-                    Adicionar Estudantes
-                </button>
-            </div>
-        </div>
-    `;
-}
-
-/**
- * Enhanced Refresh Function
- */
-function refreshLeaderboard() {
-    if (isLoading) return;
-    
-    showLoading();
-    addLog('Atualizando dados...', 'info');
-    
-    setTimeout(() => {
-        displayLeaderboard();
-        hideLoading();
-        showToast('Dados atualizados com sucesso!', 'success');
-        addLog('Dados atualizados', 'success');
-    }, 1000);
-}
-
-/**
- * Search and Filter Functions
- */
-function searchStudents(query) {
-    if (!query || query.length < 2) {
-        displayLeaderboard();
-        return;
-    }
-    
-    const normalizedQuery = removerAcentos(query.toLowerCase());
-    const filteredStudents = leaderboardData.filter(student => 
-        removerAcentos(student.name.toLowerCase()).includes(normalizedQuery)
-    );
-    
-    const sortedStudents = sortStudents(filteredStudents, currentSort);
-    displayStudentCards(sortedStudents);
-    
-    addLog(`Pesquisa: "${query}" - ${filteredStudents.length} resultados`, 'info');
-}
-
-/**
- * Statistics Functions
- */
-function calculateStatistics() {
-    if (leaderboardData.length === 0) return null;
-    
-    const coins = leaderboardData.map(s => s.coins);
-    const positive = coins.filter(c => c >= 0).length;
-    const negative = coins.filter(c => c < 0).length;
-    const total = coins.reduce((sum, c) => sum + c, 0);
-    const average = total / coins.length;
-    const max = Math.max(...coins);
-    const min = Math.min(...coins);
-    
-    return {
-        totalStudents: leaderboardData.length,
-        totalCoins: total,
-        averageCoins: average,
-        positiveBalances: positive,
-        negativeBalances: negative,
-        maxBalance: max,
-        minBalance: min
-    };
-}
-
-function showStatistics() {
-    const stats = calculateStatistics();
-    if (!stats) {
-        showToast('Nenhum dado disponível para estatísticas', 'warning');
-        return;
-    }
-    
-    const statsHtml = `
-        <div class="statistics-panel">
-            <h3><i class="fas fa-chart-bar"></i> Estatísticas da Turma ${currentClass}</h3>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <i class="fas fa-users"></i>
-                    <span>Estudantes: ${stats.totalStudents}</span>
-                </div>
-                <div class="stat-item">
-                    <i class="fas fa-coins"></i>
-                    <span>Total MKR: ${formatNumber(stats.totalCoins)}</span>
-                </div>
-                <div class="stat-item">
-                    <i class="fas fa-calculator"></i>
-                    <span>Média: ${formatNumber(Math.round(stats.averageCoins))}</span>
-                </div>
-                <div class="stat-item">
-                    <i class="fas fa-arrow-up"></i>
-                    <span>Saldos +: ${stats.positiveBalances}</span>
-                </div>
-                <div class="stat-item">
-                    <i class="fas fa-arrow-down"></i>
-                    <span>Saldos -: ${stats.negativeBalances}</span>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    showToast(statsHtml, 'info');
-    addLog('Estatísticas exibidas', 'info');
-}
-
-/**
- * Export Functions
- */
-function exportLeaderboard() {
-    if (leaderboardData.length === 0) {
-        showToast('Nenhum dado para exportar', 'warning');
-        return;
-    }
-    
-    const sortedData = sortStudents([...leaderboardData], currentSort);
-    let csvContent = 'Posição,Nome,MKR Coins,Status\n';
-    
-    sortedData.forEach((student, index) => {
-        const position = currentSort === 'coins' ? index + 1 : '-';
-        const status = student.coins >= 0 ? 'Positivo' : 'Negativo';
-        csvContent += `${position},"${student.name}",${student.coins},${status}\n`;
+function addSystemLog(message, type = 'info') {
+    const timestamp = new Date().toLocaleString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
     });
     
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const filename = `leaderboard_${currentClass}_${new Date().toISOString().split('T')[0]}.csv`;
+    console.log(`[${timestamp}] [${type.toUpperCase()}] ${message}`);
     
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.style.display = 'none';
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    showToast('Leaderboard exportado com sucesso!', 'success');
-    addLog(`Leaderboard exportado: ${filename}`, 'success');
+    // Could be extended to show in a debug panel if needed
 }
 
 /**
- * Função para forçar atualização dos totais - USO DE EMERGÊNCIA
+ * Stats Management
  */
-function forceUpdateTotals() {
-    console.log('Forçando atualização dos totais...');
+function updateSystemStats() {
+    const stats = calculateGlobalStats();
     
-    let totalNomes = 0;
+    const totalUsersElement = document.getElementById('total-users');
+    const totalCoinsElement = document.getElementById('total-coins');
+    
+    if (totalUsersElement) {
+        animateCounter(totalUsersElement, stats.totalUsers);
+    }
+    
+    if (totalCoinsElement) {
+        animateCounter(totalCoinsElement, stats.totalCoins);
+    }
+    
+    addSystemLog(`Estatísticas atualizadas: ${stats.totalUsers} usuários, ${stats.totalCoins} coins`, 'info');
+}
+
+function calculateGlobalStats() {
+    let totalUsers = 0;
     let totalCoins = 0;
     
-    // Recalcular tudo do zero
+    // Count all students across all classes
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        
-        if (key.startsWith(currentClass) && !key.includes('_historico')) {
-            const coinValue = localStorage.getItem(key);
-            const coins = parseInt(coinValue, 10);
-            
-            if (!isNaN(coins) && coinValue !== null && coinValue !== '') {
-                totalNomes++;
-                totalCoins += coins;
-                console.log(`${key}: ${coins} (Total: ${totalCoins})`);
-            }
+        if (key.match(/^[5][ABC]_/) && !key.includes('_historico')) {
+            totalUsers++;
+            totalCoins += parseInt(localStorage.getItem(key)) || 0;
         }
     }
     
-    console.log(`RESULTADO FINAL - Estudantes: ${totalNomes}, Total MKR: ${totalCoins}`);
+    return { totalUsers, totalCoins };
+}
+
+function animateCounter(element, targetValue) {
+    const currentValue = parseInt(element.textContent.replace(/\D/g, '')) || 0;
+    const increment = Math.ceil(Math.abs(targetValue - currentValue) / 30);
     
-    // Atualizar diretamente sem animação
-    const contadorNomes = document.getElementById('contador-nomes');
-    const contadorCoins = document.getElementById('contador-coins');
-    
-    if (contadorNomes) {
-        contadorNomes.textContent = formatNumber(totalNomes);
+    if (currentValue !== targetValue) {
+        const newValue = currentValue < targetValue 
+            ? Math.min(currentValue + increment, targetValue)
+            : Math.max(currentValue - increment, targetValue);
+            
+        element.textContent = formatNumber(newValue);
+        
+        if (newValue !== targetValue) {
+            setTimeout(() => animateCounter(element, targetValue), 50);
+        }
     }
-    
-    if (contadorCoins) {
-        contadorCoins.textContent = formatNumber(totalCoins);
-    }
-    
-    showToast(`Totais atualizados: ${totalNomes} estudantes, ${formatNumber(totalCoins)} MKR`, 'success');
-    addLog(`Totais forçados - Nomes: ${totalNomes}, MKR: ${formatNumber(totalCoins)}`, 'success');
-    
-    return { totalNomes, totalCoins };
+}
+
+function formatNumber(num) {
+    return new Intl.NumberFormat('pt-BR').format(num);
 }
 
 /**
- * Função de debug para verificar dados no localStorage
+ * Info Modal Management
  */
-function debugLocalStorage() {
-    console.log('=== DEBUG LOCALSTORAGE ===');
-    console.log(`Turma atual: ${currentClass}`);
+function toggleInfoModal() {
+    const modal = document.getElementById('info-modal');
+    if (!modal) return;
     
-    let debugTotal = 0;
-    let debugCount = 0;
+    infoModalOpen = !infoModalOpen;
     
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        
-        if (key.startsWith(currentClass) && !key.includes('_historico')) {
-            const value = localStorage.getItem(key);
-            const numValue = parseInt(value, 10);
-            
-            console.log(`${key}: "${value}" -> ${numValue} (válido: ${!isNaN(numValue)})`);
-            
-            if (!isNaN(numValue) && value !== null && value !== '') {
-                debugCount++;
-                debugTotal += numValue;
-            }
-        }
+    if (infoModalOpen) {
+        modal.style.display = 'flex';
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+        addSystemLog('Modal de informações aberto', 'info');
+    } else {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }, 300);
+        addSystemLog('Modal de informações fechado', 'info');
     }
-    
-    console.log(`TOTAL DEBUG: ${debugCount} estudantes, ${debugTotal} MKR`);
-    console.log('=== FIM DEBUG ===');
-    
-    return { count: debugCount, total: debugTotal };
 }
+
+// Close modal when clicking outside
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('info-modal');
+    if (modal && infoModalOpen && e.target === modal) {
+        toggleInfoModal();
+    }
+});
 
 /**
- * Initialization Functions
+ * Background Animation Control
  */
-function initializeApp() {
-    addLog('Sistema Maker Coins Leaderboard iniciado', 'success');
+function toggleBackgroundAnimation() {
+    const bgAnimation = document.querySelector('.bg-animation');
+    if (!bgAnimation) return;
     
-    // Set default class and sort
-    updateClassButtons(currentClass);
-    updateSortButtons(currentSort);
+    backgroundAnimationActive = !backgroundAnimationActive;
+    bgAnimation.style.animationPlayState = backgroundAnimationActive ? 'running' : 'paused';
     
-    // Load initial data
-    displayLeaderboard();
-    
-    // Start intervals
-    priceUpdateInterval = setInterval(updateMarketPrices, 15000);
-    logUpdateInterval = setInterval(() => {
-        addLog(`Sistema operacional - ${formatNumber(leaderboardData.length)} estudantes ativos`, 'info');
-    }, 300000); // Every 5 minutes
-    
-    addLog('Todos os sistemas inicializados', 'success');
-}
-
-function setupEventListeners() {
-    // Auto-refresh every 30 seconds
-    setInterval(() => {
-        if (!isLoading) {
-            displayLeaderboard();
-        }
-    }, 30000);
-    
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && e.key === 'r') {
-            e.preventDefault();
-            refreshLeaderboard();
-        } else if (e.ctrlKey && e.key === 's') {
-            e.preventDefault();
-            showStatistics();
-        } else if (e.ctrlKey && e.key === 'e') {
-            e.preventDefault();
-            exportLeaderboard();
-        }
+    const floatingIcons = document.querySelectorAll('.floating-icons i');
+    floatingIcons.forEach(icon => {
+        icon.style.animationPlayState = backgroundAnimationActive ? 'running' : 'paused';
     });
     
-    // Handle visibility change
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
-            addLog('Aplicação reativada', 'info');
-            refreshLeaderboard();
-        }
-    });
-}
-
-/**
- * Cleanup Functions
- */
-function cleanup() {
-    if (priceUpdateInterval) {
-        clearInterval(priceUpdateInterval);
-    }
-    
-    if (logUpdateInterval) {
-        clearInterval(logUpdateInterval);
-    }
-    
-    addLog('Sistema finalizado', 'warning');
-}
-
-/**
- * Error Handling
- */
-function handleError(error, context = 'Sistema') {
-    console.error(`${context} Error:`, error);
-    addLog(`Erro em ${context}: ${error.message}`, 'error');
-    showToast(`Erro inesperado. Verifique o log do sistema.`, 'error');
-}
-
-/**
- * Performance Monitoring
- */
-function logPerformance(operation, startTime) {
-    const endTime = performance.now();
-    const duration = (endTime - startTime).toFixed(2);
-    addLog(`Operação '${operation}' concluída em ${duration}ms`, 'info');
+    addSystemLog(`Animação de fundo ${backgroundAnimationActive ? 'ativada' : 'desativada'}`, 'info');
 }
 
 /**
  * Theme Management
  */
+function initializeTheme() {
+    const savedTheme = localStorage.getItem('portal-theme');
+    if (savedTheme) {
+        document.body.setAttribute('data-theme', savedTheme);
+        addSystemLog(`Tema carregado: ${savedTheme}`, 'info');
+    }
+}
+
 function toggleTheme() {
     const body = document.body;
     const currentTheme = body.getAttribute('data-theme') || 'dark';
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     
     body.setAttribute('data-theme', newTheme);
-    localStorage.setItem('leaderboard-theme', newTheme);
+    localStorage.setItem('portal-theme', newTheme);
     
-    showToast(`Tema alterado para ${newTheme === 'dark' ? 'escuro' : 'claro'}`, 'info');
-    addLog(`Tema alterado: ${newTheme}`, 'info');
+    showNotification(`Tema alterado para ${newTheme === 'dark' ? 'escuro' : 'claro'}`, 'info');
+    addSystemLog(`Tema alterado: ${newTheme}`, 'info');
 }
 
 /**
- * Advanced Features
+ * Navigation Enhancement
  */
-function showClassComparison() {
-    const classes = ['5A', '5B', '5C'];
-    const comparison = {};
+function enhanceNavigation() {
+    const navButtons = document.querySelectorAll('.nav-button');
     
-    classes.forEach(className => {
-        let total = 0;
-        let count = 0;
+    navButtons.forEach(button => {
+        // Add hover sound effect (could be implemented)
+        button.addEventListener('mouseenter', () => {
+            button.style.transform = 'translateY(-8px) scale(1.02)';
+        });
         
+        button.addEventListener('mouseleave', () => {
+            button.style.transform = '';
+        });
+        
+        // Add ripple effect on click
+        button.addEventListener('click', function(e) {
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple-effect';
+            
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+            
+            ripple.style.cssText = `
+                position: absolute;
+                width: ${size}px;
+                height: ${size}px;
+                left: ${x}px;
+                top: ${y}px;
+                background: rgba(255, 255, 255, 0.3);
+                border-radius: 50%;
+                transform: scale(0);
+                animation: ripple 0.6s linear;
+                pointer-events: none;
+            `;
+            
+            this.style.position = 'relative';
+            this.style.overflow = 'hidden';
+            this.appendChild(ripple);
+            
+            setTimeout(() => ripple.remove(), 600);
+        });
+    });
+}
+
+/**
+ * Performance Monitoring
+ */
+function logPerformanceMetrics() {
+    if (performance && performance.memory) {
+        const memory = performance.memory;
+        addSystemLog(`Memória: ${(memory.usedJSHeapSize / 1048576).toFixed(2)}MB usados`, 'info');
+    }
+    
+    const loadTime = performance.now();
+    addSystemLog(`Tempo de carregamento: ${loadTime.toFixed(2)}ms`, 'info');
+}
+
+/**
+ * Accessibility Features
+ */
+function setupAccessibility() {
+    // High contrast mode
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mediaQuery.matches) {
+        document.body.classList.add('reduced-motion');
+        toggleBackgroundAnimation(); // Disable animations
+        addSystemLog('Modo de movimento reduzido ativado', 'info');
+    }
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && infoModalOpen) {
+            toggleInfoModal();
+        }
+        
+        // Alt + H for help/info
+        if (e.altKey && e.key === 'h') {
+            e.preventDefault();
+            toggleInfoModal();
+        }
+        
+        // Alt + T for theme toggle
+        if (e.altKey && e.key === 't') {
+            e.preventDefault();
+            toggleTheme();
+        }
+    });
+}
+
+/**
+ * Data Health Check
+ */
+function performDataHealthCheck() {
+    let healthyEntries = 0;
+    let corruptedEntries = 0;
+    const issues = [];
+    
+    try {
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
-            if (key.startsWith(className) && !key.includes('_historico')) {
-                const coinValue = localStorage.getItem(key);
-                const coins = parseInt(coinValue, 10);
+            if (key.match(/^[5][ABC]_/)) {
+                const value = localStorage.getItem(key);
                 
-                if (!isNaN(coins) && coinValue !== null && coinValue !== '') {
-                    total += coins;
-                    count++;
+                if (key.includes('_historico')) {
+                    try {
+                        const history = JSON.parse(value);
+                        if (Array.isArray(history)) {
+                            healthyEntries++;
+                        } else {
+                            corruptedEntries++;
+                            issues.push(`Histórico inválido: ${key}`);
+                        }
+                    } catch (e) {
+                        corruptedEntries++;
+                        issues.push(`JSON corrompido: ${key}`);
+                    }
+                } else {
+                    const coins = parseInt(value);
+                    if (!isNaN(coins) && isFinite(coins)) {
+                        healthyEntries++;
+                    } else {
+                        corruptedEntries++;
+                        issues.push(`Valor inválido: ${key} = ${value}`);
+                    }
                 }
             }
         }
         
-        comparison[className] = {
-            students: count,
-            totalCoins: total,
-            average: count > 0 ? Math.round(total / count) : 0
+        const healthStatus = {
+            healthy: healthyEntries,
+            corrupted: corruptedEntries,
+            issues: issues,
+            percentage: healthyEntries / (healthyEntries + corruptedEntries) * 100
         };
-    });
-    
-    let comparisonHtml = `
-        <div class="class-comparison">
-            <h3><i class="fas fa-balance-scale"></i> Comparação entre Turmas</h3>
-            <div class="comparison-grid">
-    `;
-    
-    Object.entries(comparison).forEach(([className, data]) => {
-        comparisonHtml += `
-            <div class="comparison-item">
-                <h4>Turma ${className}</h4>
-                <div class="comparison-stats">
-                    <div class="stat"><i class="fas fa-users"></i> ${data.students} estudantes</div>
-                    <div class="stat"><i class="fas fa-coins"></i> ${formatNumber(data.totalCoins)} MKR</div>
-                    <div class="stat"><i class="fas fa-calculator"></i> Média: ${formatNumber(data.average)}</div>
-                </div>
-            </div>
-        `;
-    });
-    
-    comparisonHtml += `
-            </div>
-        </div>
-    `;
-    
-    showToast(comparisonHtml, 'info');
-    addLog('Comparação entre turmas exibida', 'info');
-}
-
-function generateQRCode() {
-    const url = window.location.href;
-    const qrData = `Maker Coins Leaderboard - ${currentClass}\n${url}`;
-    
-    showToast(`QR Code gerado para compartilhamento: ${url}`, 'success');
-    addLog('QR Code gerado', 'info');
-}
-
-/**
- * Animation Effects
- */
-function createParticleEffect() {
-    const container = document.querySelector('.crypto-background');
-    if (!container) return;
-    
-    for (let i = 0; i < 6; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        particle.style.setProperty('--i', i + 1);
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.animationDelay = Math.random() * 10 + 's';
-        container.appendChild(particle);
-    }
-}
-
-/**
- * Accessibility Functions
- */
-function announceToScreenReader(message) {
-    const announcement = document.createElement('div');
-    announcement.setAttribute('aria-live', 'polite');
-    announcement.setAttribute('aria-atomic', 'true');
-    announcement.className = 'sr-only';
-    announcement.textContent = message;
-    
-    document.body.appendChild(announcement);
-    setTimeout(() => document.body.removeChild(announcement), 1000);
-}
-
-/**
- * Data Validation
- */
-function validateLocalStorageData() {
-    let validEntries = 0;
-    let invalidEntries = 0;
-    
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key.match(/^[5][ABC]_/)) {
-            const value = localStorage.getItem(key);
-            if (key.includes('_historico')) {
-                try {
-                    JSON.parse(value);
-                    validEntries++;
-                } catch (e) {
-                    invalidEntries++;
-                    addLog(`Histórico corrompido detectado: ${key}`, 'warning');
-                }
-            } else {
-                if (!isNaN(parseInt(value))) {
-                    validEntries++;
-                } else {
-                    invalidEntries++;
-                    addLog(`Valor inválido detectado: ${key} = ${value}`, 'warning');
-                }
-            }
+        
+        if (corruptedEntries > 0) {
+            addSystemLog(`Verificação de integridade: ${corruptedEntries} problemas encontrados`, 'warning');
+            showNotification(`Atenção: ${corruptedEntries} entradas corrompidas detectadas`, 'warning');
+        } else {
+            addSystemLog(`Verificação de integridade: todos os dados estão íntegros`, 'success');
         }
+        
+        return healthStatus;
+        
+    } catch (error) {
+        addSystemLog(`Erro na verificação de integridade: ${error.message}`, 'error');
+        return null;
     }
-    
-    if (invalidEntries > 0) {
-        showToast(`Atenção: ${invalidEntries} entradas inválidas detectadas`, 'warning');
-    }
-    
-    addLog(`Validação: ${validEntries} válidas, ${invalidEntries} inválidas`, 'info');
-    return invalidEntries === 0;
 }
 
 /**
- * Backup and Restore
+ * System Diagnostics
  */
-function createQuickBackup() {
-    const backupData = {};
+function runSystemDiagnostics() {
+    addSystemLog('Iniciando diagnóstico do sistema...', 'info');
     
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key.match(/^[5][ABC]_/)) {
-            backupData[key] = localStorage.getItem(key);
+    const diagnostics = {
+        localStorage: typeof Storage !== 'undefined',
+        dataHealth: performDataHealthCheck(),
+        performance: {
+            loadTime: performance.now(),
+            memory: performance.memory ? performance.memory.usedJSHeapSize : 'N/A'
+        },
+        browser: {
+            userAgent: navigator.userAgent,
+            language: navigator.language,
+            cookieEnabled: navigator.cookieEnabled
         }
-    }
-    
-    const backup = {
-        timestamp: new Date().toISOString(),
-        version: '2.0',
-        data: backupData
     };
     
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-    const link = document.createElement('a');
-    const filename = `makercoin_leaderboard_backup_${new Date().toISOString().split('T')[0]}.json`;
-    
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.style.display = 'none';
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    showToast('Backup criado com sucesso!', 'success');
-    addLog(`Backup criado: ${filename}`, 'success');
+    addSystemLog('Diagnóstico completo', 'success');
+    return diagnostics;
 }
 
 /**
- * DOM Ready and Initialization
+ * Export/Import System Data
+ */
+function createSystemBackup() {
+    try {
+        const backup = {
+            timestamp: new Date().toISOString(),
+            version: '2.0-portal',
+            systemInfo: {
+                userAgent: navigator.userAgent,
+                timestamp: Date.now()
+            },
+            data: {}
+        };
+        
+        // Collect all relevant data
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.match(/^[5][ABC]_/) || key.includes('-theme')) {
+                backup.data[key] = localStorage.getItem(key);
+            }
+        }
+        
+        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+        const link = document.createElement('a');
+        const filename = `makercoin_system_backup_${new Date().toISOString().split('T')[0]}.json`;
+        
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.style.display = 'none';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showNotification('Backup do sistema criado com sucesso!', 'success');
+        addSystemLog(`Backup completo criado: ${filename}`, 'success');
+        
+    } catch (error) {
+        addSystemLog(`Erro ao criar backup: ${error.message}`, 'error');
+        showNotification('Erro ao criar backup do sistema', 'error');
+    }
+}
+
+/**
+ * Initialization Functions
+ */
+function initializePortal() {
+    addSystemLog('Inicializando Portal Maker Coins...', 'info');
+    
+    // Initialize components
+    initializeTheme();
+    setupAccessibility();
+    enhanceNavigation();
+    
+    // Run diagnostics
+    const diagnostics = runSystemDiagnostics();
+    
+    // Update stats
+    updateSystemStats();
+    
+    // Setup intervals
+    statsUpdateInterval = setInterval(updateSystemStats, 30000); // Every 30 seconds
+    
+    // Performance logging
+    setTimeout(logPerformanceMetrics, 1000);
+    
+    addSystemLog('Portal inicializado com sucesso', 'success');
+    showNotification('Sistema Maker Coins carregado!', 'success', 2000);
+}
+
+function setupEventListeners() {
+    // Handle page visibility changes
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible') {
+            addSystemLog('Portal reativado', 'info');
+            updateSystemStats();
+        }
+    });
+    
+    // Handle online/offline status
+    window.addEventListener('online', function() {
+        addSystemLog('Conexão restaurada', 'success');
+        showNotification('Conexão com a internet restaurada', 'success');
+    });
+    
+    window.addEventListener('offline', function() {
+        addSystemLog('Conexão perdida', 'warning');
+        showNotification('Conexão com a internet perdida', 'warning');
+    });
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        if (statsUpdateInterval) {
+            clearInterval(statsUpdateInterval);
+        }
+        addSystemLog('Portal finalizado', 'info');
+    });
+}
+
+/**
+ * CSS Injection for Dynamic Styles
+ */
+function injectDynamicStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        .system-notification {
+            background: var(--gradient-panel);
+            border: 1px solid var(--border-accent);
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            animation: slideInRight 0.3s ease forwards;
+            max-width: 400px;
+        }
+        
+        .system-notification.success {
+            border-color: var(--success);
+        }
+        
+        .system-notification.error {
+            border-color: var(--danger);
+        }
+        
+        .system-notification.warning {
+            border-color: var(--warning);
+        }
+        
+        .notification-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .notification-content i {
+            font-size: 1.2rem;
+            margin-top: 0.2rem;
+        }
+        
+        .notification-text strong {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .notification-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.2rem;
+            transition: all 0.3s ease;
+            margin-left: auto;
+        }
+        
+        .notification-close:hover {
+            color: var(--text-primary);
+            transform: scale(1.1);
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        
+        .reduced-motion * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    `;
+    
+    document.head.appendChild(style);
+}
+
+/**
+ * DOM Ready Initialization
  */
 document.addEventListener('DOMContentLoaded', function() {
     try {
-        // Initialize particle effects
-        createParticleEffect();
+        // Inject dynamic styles
+        injectDynamicStyles();
         
         // Setup event listeners
         setupEventListeners();
         
-        // Load saved theme
-        const savedTheme = localStorage.getItem('leaderboard-theme');
-        if (savedTheme) {
-            document.body.setAttribute('data-theme', savedTheme);
-        }
+        // Initialize portal
+        initializePortal();
         
-        // Validate data
-        validateLocalStorageData();
-        
-        // Initialize app
-        initializeApp();
-        
-        // Setup cleanup on page unload
-        window.addEventListener('beforeunload', cleanup);
-        
-        addLog('Aplicação carregada com sucesso', 'success');
+        addSystemLog('DOM carregado e portal pronto', 'success');
         
     } catch (error) {
-        handleError(error, 'Inicialização');
+        console.error('Initialization error:', error);
+        addSystemLog(`Erro na inicialização: ${error.message}`, 'error');
     }
 });
 
 /**
- * Global Error Handlers
+ * Global Error Handling
  */
 window.addEventListener('error', function(e) {
-    handleError(e.error, 'Global');
+    addSystemLog(`Erro global: ${e.error?.message || e.message}`, 'error');
+    showNotification('Erro inesperado detectado', 'error');
 });
 
 window.addEventListener('unhandledrejection', function(e) {
-    handleError(e.reason, 'Promise');
+    addSystemLog(`Promise rejeitada: ${e.reason}`, 'error');
 });
 
 /**
- * Export Functions for Global Access
+ * Export functions for global access
  */
-window.showLeaderboard = showLeaderboard;
-window.toggleSort = toggleSort;
-window.refreshLeaderboard = refreshLeaderboard;
-window.toggleMiniTerminal = toggleMiniTerminal;
-window.showStatistics = showStatistics;
-window.exportLeaderboard = exportLeaderboard;
-window.showClassComparison = showClassComparison;
+window.authenticate = authenticate;
+window.toggleInfoModal = toggleInfoModal;
 window.toggleTheme = toggleTheme;
-window.createQuickBackup = createQuickBackup;
-window.forceUpdateTotals = forceUpdateTotals;
-window.debugLocalStorage = debugLocalStorage;
+window.createSystemBackup = createSystemBackup;
+window.runSystemDiagnostics = runSystemDiagnostics;
