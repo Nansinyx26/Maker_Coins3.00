@@ -3,91 +3,254 @@
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>Página Inicial</title>
+  <title>Maker Coin System - Portal de Acesso</title>
   <link href="css/style3.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-  <div class="container">
-    <h1>Bem-vindo ao Sistema Maker Coins</h1>
-    <div class="button-container">
-      <!-- Botão para acessar o sistema do 5º Ano -->
-      <button onclick="window.location.href='frontend.html'">
-        Ir para Leaderboard (5º Ano)
-      </button>
-
-      <!-- Botão para autenticação e atualização do 5º Ano -->
-      <button onclick="authenticate()">
-        Ir para Atualização (5º Ano)
-      </button>
-
-      <!-- NOVO: Botão para acessar o sistema exclusivo do 3º Ano -->
-      <button onclick="window.location.href='index3.html'">
-        Acessar 3º Ano
-      </button>
+ <!-- Background Effects -->
+  <div class="bg-animation">
+    <div class="crypto-grid"></div>
+    <div class="floating-icons">
+      <i class="fab fa-bitcoin" style="--delay: 0s;"></i>
+      <i class="fas fa-coins" style="--delay: 2s;"></i>
+      <i class="fas fa-chart-line" style="--delay: 4s;"></i>
+      <i class="fab fa-ethereum" style="--delay: 6s;"></i>
+      <i class="fas fa-graduation-cap" style="--delay: 8s;"></i>
     </div>
   </div>
 
-  <!-- Marca d'água no canto inferior esquerdo -->
-  <div style="
-    position: fixed;
-    bottom: 10px;
-    left: 10px;
-    color: #7f8c8d;
-    font-size: 0.85rem;
-    opacity: 0.6;
-    z-index: 999;
-    pointer-events: none;">
-    Criado por Renan Farias
+
+<!-- Header com logo -->
+<header class="main-header">
+  <div class="logo-section">
+    <div class="main-logo">
+      <img src="img/MKR.png" alt="Maker Coins Logo" class="logo-image">
+      <div class="logo-text">
+        <span class="logo-primary">MAKER COINS</span>
+        <span class="logo-secondary">SISTEMA EDUCACIONAL</span>
+      </div>
+    </div>
+    <div class="version-tag">v2.0 CRYPTO EDITION</div>
+  </div>
+</header>
+
+  <!-- Container principal -->
+  <div class="container">
+    <!-- Terminal-style header -->
+    <div class="terminal-window">
+      <div class="terminal-header">
+        <div class="terminal-controls">
+          <div class="control-btn close"></div>
+          <div class="control-btn minimize"></div>
+          <div class="control-btn maximize"></div>
+        </div>
+        <div class="terminal-title">
+          <i class="fas fa-terminal"></i>
+          ACCESS PORTAL
+        </div>
+      </div>
+
+      <div class="terminal-body">
+        <div class="welcome-section">
+          <h1 class="main-title">
+            <span class="title-line">BEM-VINDO AO</span>
+            <span class="title-emphasis">MAKER COINS SYSTEM</span>
+            <div class="title-underline"></div>
+          </h1>
+          
+          <div class="subtitle">
+            Sistema de Gamificação Educacional com Blockchain Fictício
+          </div>
+        </div>
+
+        <!-- Menu de navegação estilizado -->
+        <div class="navigation-menu">
+          <div class="menu-section">
+            <div class="section-header">
+              <i class="fas fa-graduation-cap"></i>
+              <span>5º ANO - ENSINO FUNDAMENTAL</span>
+            </div>
+            
+            <div class="menu-buttons">
+              <button class="nav-button primary" onclick="window.location.href='frontend.html'">
+                <div class="button-icon">
+                  <i class="fas fa-trophy"></i>
+                </div>
+                <div class="button-content">
+                  <span class="button-title">Extrato Bancario</span>
+                  <span class="button-desc">Visualizar ranking de estudantes</span>
+                </div>
+                <div class="button-arrow">
+                  <i class="fas fa-chevron-right"></i>
+                </div>
+              </button>
+
+              <button class="nav-button secondary" onclick="authenticate()">
+                <div class="button-icon">
+                  <i class="fas fa-cogs"></i>
+                </div>
+                <div class="button-content">
+                  <span class="button-title">ATUALIZAÇÃO</span>
+                  <span class="button-desc">Gerenciar coins e transações</span>
+                </div>
+                <div class="button-arrow">
+                  <i class="fas fa-chevron-right"></i>
+                </div>
+                <div class="security-badge">
+                  <i class="fas fa-lock"></i>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <div class="menu-section">
+            <div class="section-header">
+              <i class="fas fa-graduation-cap"></i>
+              <span>3º ANO - ENSINO FUNDAMENTAL</span>
+            </div>
+            
+            <div class="menu-buttons">
+              <button class="nav-button accent" onclick="window.location.href='index3.html'">
+                <div class="button-icon">
+                  <i class="fas fa-star"></i>
+                </div>
+                <div class="button-content">
+                  <span class="button-title">SISTEMA 3º ANO</span>
+                  <span class="button-desc">Portal exclusivo para 3º ano</span>
+                </div>
+                <div class="button-arrow">
+                  <i class="fas fa-chevron-right"></i>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção de estatísticas -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number" id="total-users">0</div>
+              <div class="stat-label">Usuários Ativos</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-coins"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number" id="total-coins">0</div>
+              <div class="stat-label">MKR Coins Circulando</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">99.9%</div>
+              <div class="stat-label">Uptime Sistema</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Informações do sistema -->
+        <div class="system-info">
+          <div class="info-panel">
+            <div class="panel-header">
+              <i class="fas fa-info-circle"></i>
+              <span>SOBRE O SISTEMA</span>
+            </div>
+            <div class="panel-content">
+              <p>Sistema de gamificação educativa baseado em blockchain fictício. Desenvolvido para incentivar o aprendizado através de mecânicas de recompensa digital.</p>
+              <div class="features-list">
+                <div class="feature">
+                  <i class="fas fa-check"></i>
+                  <span>Sistema de pontuação em tempo real</span>
+                </div>
+                <div class="feature">
+                  <i class="fas fa-check"></i>
+                  <span>Histórico completo de transações</span>
+                </div>
+                <div class="feature">
+                  <i class="fas fa-check"></i>
+                  <span>Interface moderna e intuitiva</span>
+                </div>
+                <div class="feature">
+                  <i class="fas fa-check"></i>
+                  <span>Relatórios e exportação de dados</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
- <!-- Botão de informações com GIF no canto superior esquerdo -->
-<button onclick="document.getElementById('sobre').style.display='block'" style="
-  position: fixed;
-  top: 1rem;
-  left: 1rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  z-index: 1000;
-  padding: 0;
-">
-  <img src="img/information.gif" alt="Sobre" style="width: 40px; height: 40px;">
-</button>
+  <!-- Botão de informações -->
+  <button class="info-button" onclick="toggleInfoModal()">
+    <img src="img/information.gif" alt="Informações" />
+  </button>
 
-
-  <!-- Modal com informações do sistema -->
-  <div id="sobre" style="
-    display: none;
-    position: fixed;
-    top: 20%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #2c3e50;
-    color: white;
-    padding: 1.5rem 2rem;
-    border-radius: 10px;
-    z-index: 1001;
-    width: 90%;
-    max-width: 400px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.4);">
-    <h3 style="margin-top:0; color: #1abc9c;">Sobre o Sistema</h3>
-   <p style="line-height: 1.5;">
-  Este sistema foi desenvolvido por <strong>Renan Farias</strong> com foco em gamificação educativa.
-  Ele permite a gestão de pontuação de alunos via <code>localStorage</code> com rankings, histórico
-  e exportação de dados, contato: <a href="https://www.linkedin.com/in/renan-de-oliveira-farias-66a9b412b/" target="_blank" style="color: #1abc9c; text-decoration: underline;">LinkedIn de Renan Farias</a>.
-</p>
-    <button onclick="document.getElementById('sobre').style.display='none'" style="
-      margin-top: 1rem;
-      background: #16a085;
-      border: none;
-      color: white;
-      padding: 0.6rem 1.2rem;
-      border-radius: 5px;
-      cursor: pointer;">
-      Fechar
-    </button>
+  <!-- Modal de informações -->
+  <div id="info-modal" class="info-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Informações do Sistema</h3>
+        <button class="close-btn" onclick="toggleInfoModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="developer-info">
+          <div class="developer-avatar">
+            <i class="fas fa-user-tie"></i>
+          </div>
+          <div class="developer-details">
+            <h4>Desenvolvido por Renan Farias</h4>
+            <p>Sistema focado em gamificação educativa com interface moderna e funcionalidades avançadas.</p>
+            <div class="contact-info">
+              <a href="https://www.linkedin.com/in/renan-de-oliveira-farias-66a9b412b/" target="_blank" class="contact-link">
+                <i class="fab fa-linkedin"></i>
+                <span>LinkedIn</span>
+              </a>
+            </div>
+          </div>
+        </div>
+        
+        <div class="system-details">
+          <h4>Características do Sistema</h4>
+          <ul>
+            <li>Gestão de pontuação via localStorage</li>
+            <li>Rankings dinâmicos e histórico completo</li>
+            <li>Exportação de dados em formato TXT</li>
+            <li>Interface responsiva e moderna</li>
+            <li>Sistema de logs e monitoramento</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
 
+  <!-- Status da rede -->
+  <div class="network-status">
+    <div class="status-indicator">
+      <div class="status-dot online"></div>
+      <span>BLOCKCHAIN ATIVO</span>
+    </div>
+  </div>
+
+  <!-- Marca d'água -->
+  <div class="watermark">
+    <span>Criado por Renan Farias</span>
+  </div>
 
   <script src="js/index.js"></script>
 </body>
