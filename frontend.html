@@ -1,130 +1,216 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
- <head>
+<head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>
-   Makercoins
-  </title>
+  <title>Maker Coins - Leaderboard</title>
   <link href="css/style1.css" rel="stylesheet"/>
-  <style>
-   #sala-info {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            background: #34495e;
-            padding: 0.8rem 1.2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-            color: #ecf0f1;
-            font-size: 1rem;
-            display: flex;
-            gap: 1rem;
-            z-index: 1000;
-        }
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+  <!-- Background Animation -->
+  <div class="crypto-background">
+    <div class="particle" style="--i: 1;"></div>
+    <div class="particle" style="--i: 2;"></div>
+    <div class="particle" style="--i: 3;"></div>
+    <div class="particle" style="--i: 4;"></div>
+    <div class="particle" style="--i: 5;"></div>
+    <div class="particle" style="--i: 6;"></div>
+  </div>
 
-        /* Botões de ordenação no canto superior esquerdo */
-        #sort-buttons {
-            position: fixed;
-            top: 1rem;
-            left: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            z-index: 1000;
-        }
+  <!-- Header com logo e market ticker -->
+  <header class="crypto-header">
+    <div class="header-content">
+      <div class="logo-container">
+        <div class="logo">
+          <img src="img/MKR.png" alt="Maker Coins Logo" class="logo-image">
+          <div class="logo-text">
+            <span class="logo-main">MAKER COINS</span>
+            <span class="logo-sub">LEADERBOARD</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="market-data">
+        <div class="market-item">
+          <span class="symbol">MKR</span>
+          <span class="price" id="mkr-live">$1,247.89</span>
+          <span class="change positive">+2.34%</span>
+        </div>
+      </div>
+    </div>
+  </header>
 
-        .sort-button {
-            background: #16a085;
-            color: white;
-            border: none;
-            padding: 0.6rem 1rem;
-            font-size: 0.9rem;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            min-width: 140px;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .sort-button:hover {
-            background: #1abc9c;
-            transform: scale(1.05);
-        }
-
-        .sort-button.active {
-            background: #e74c3c;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
-        }
-
-        .sort-button.active:hover {
-            background: #c0392b;
-        }
-
-        /* Responsividade para telas menores */
-        @media (max-width: 768px) {
-            #sort-buttons {
-                flex-direction: row;
-                gap: 0.3rem;
-            }
-            
-            .sort-button {
-                min-width: 100px;
-                padding: 0.5rem 0.8rem;
-                font-size: 0.8rem;
-            }
-            
-            #sala-info {
-                flex-direction: column;
-                gap: 0.3rem;
-                font-size: 0.9rem;
-                padding: 0.6rem 1rem;
-            }
-        }
-  </style>
- </head>
- <body>
   <!-- Botões de ordenação no canto superior esquerdo -->
-  <div id="sort-buttons">
-    <button class="sort-button" onclick="toggleSort('alphabetical')" id="sort-alpha">
-      📝 Alfabética
+  <div id="sort-controls" class="sort-controls">
+    <button class="sort-btn" onclick="toggleSort('alphabetical')" id="sort-alpha">
+      <i class="fas fa-sort-alpha-down"></i>
+      <span>Alfabética</span>
     </button>
-    <button class="sort-button active" onclick="toggleSort('coins')" id="sort-coins">
-      🏆 Por Coins
+    <button class="sort-btn active" onclick="toggleSort('coins')" id="sort-coins">
+      <i class="fas fa-trophy"></i>
+      <span>Por Coins</span>
     </button>
   </div>
 
-  <!-- Contador no topo direito -->
-  <div id="sala-info">
-   <span id="contador-nomes">
-    Nomes: 0
-   </span>
-   <span id="contador-coins">
-    Coins: 0
-   </span>
+  <!-- Contador de estatísticas no topo direito -->
+  <div id="stats-panel" class="stats-panel">
+    <div class="stat-item">
+      <i class="fas fa-users"></i>
+      <div class="stat-info">
+        <span class="stat-value" id="contador-nomes">0</span>
+        <span class="stat-label">Estudantes</span>
+      </div>
+    </div>
+    <div class="stat-item">
+      <i class="fas fa-coins"></i>
+      <div class="stat-info">
+        <span class="stat-value" id="contador-coins">0</span>
+        <span class="stat-label">Total MKR</span>
+      </div>
+    </div>
+    <div class="network-status">
+      <span class="status-dot"></span>
+      <span>ONLINE</span>
+    </div>
   </div>
+
+  <!-- Container principal -->
   <div class="container">
-   <h1>
-    Maker Coins
-   </h1>
-   <!-- Seção para selecionar a turma -->
-   <div class="tabs">
-    <button class="tab-button" onclick="showLeaderboard('5A')">
-     5°A
-    </button>
-    <button class="tab-button" onclick="showLeaderboard('5B')">
-     5°B
-    </button>
-    <button class="tab-button" onclick="showLeaderboard('5C')">
-     5°C
-    </button>
-   </div>
-   <!-- Exibição dos dados -->
-   <div id="leaderboard">
-   </div>
+    <!-- Terminal header estilizado -->
+    <div class="terminal-header">
+      <div class="terminal-controls">
+        <div class="control-dot close"></div>
+        <div class="control-dot minimize"></div>
+        <div class="control-dot maximize"></div>
+      </div>
+      <div class="terminal-title">
+        <img src="img/MKR.png" alt="Maker Coins Logo" class="logo-image">
+        MAKER COINS LEADERBOARD TERMINAL
+      </div>
+    </div>
+
+    <div class="terminal-content">
+      <!-- Título principal com efeitos -->
+      <h1 class="main-title">
+        <img src="img/MKR.png" alt="Maker Coins Logo" class="logo-image">
+        <span class="title-text">MAKER COINS</span>
+        <div class="title-underline"></div>
+        <div class="subtitle">RANKING DE ESTUDANTES</div>
+      </h1>
+
+      <!-- Seleção de turma com design melhorado -->
+      <div class="class-selection">
+        <div class="selection-header">
+          <i class="fas fa-graduation-cap"></i>
+          <span>SELECIONAR TURMA</span>
+        </div>
+        <div class="class-tabs">
+          <button class="class-tab" onclick="showLeaderboard('5A')" data-class="5A">
+            <div class="tab-icon">
+              <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div class="tab-text">
+              <span class="tab-grade">5º</span>
+              <span class="tab-class">A</span>
+            </div>
+            <div class="tab-glow"></div>
+          </button>
+          
+          <button class="class-tab" onclick="showLeaderboard('5B')" data-class="5B">
+            <div class="tab-icon">
+              <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div class="tab-text">
+              <span class="tab-grade">5º</span>
+              <span class="tab-class">B</span>
+            </div>
+            <div class="tab-glow"></div>
+          </button>
+          
+          <button class="class-tab" onclick="showLeaderboard('5C')" data-class="5C">
+            <div class="tab-icon">
+              <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div class="tab-text">
+              <span class="tab-grade">5º</span>
+              <span class="tab-class">C</span>
+            </div>
+            <div class="tab-glow"></div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Painel de ranking -->
+      <div class="leaderboard-panel">
+        <div class="panel-header">
+          <div class="header-left">
+            <i class="fas fa-trophy"></i>
+            <span>RANKING</span>
+          </div>
+          <div class="header-right">
+            <div class="refresh-btn" onclick="refreshLeaderboard()">
+              <i class="fas fa-sync-alt"></i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="panel-body">
+          <div id="leaderboard" class="leaderboard-container"></div>
+        </div>
+      </div>
+    </div>
   </div>
-  <script src="js/frontend.js">
-  </script>
- </body>
+
+  <!-- Botão flutuante para voltar -->
+  <div class="floating-actions">
+    <button class="fab-btn" onclick="window.location.href='index.html'" title="Voltar ao Menu">
+      <i class="fas fa-home"></i>
+    </button>
+    <button class="fab-btn" onclick="refreshLeaderboard()" title="Atualizar">
+      <i class="fas fa-sync-alt"></i>
+    </button>
+  </div>
+
+  <!-- Modal de loading -->
+  <div id="loading-modal" class="loading-modal">
+    <div class="loading-content">
+      <div class="loading-spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring"></div>
+      </div>
+      <div class="loading-text">Carregando dados...</div>
+    </div>
+  </div>
+
+  <!-- Toast notifications -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Terminal em miniatura para logs -->
+  <div id="mini-terminal" class="mini-terminal collapsed">
+    <div class="mini-terminal-header" onclick="toggleMiniTerminal()">
+      <div class="mini-controls">
+        <div class="mini-dot"></div>
+        <div class="mini-dot"></div>
+        <div class="mini-dot"></div>
+      </div>
+      <div class="mini-title">
+        <i class="fas fa-terminal"></i>
+        <span>System Log</span>
+      </div>
+    </div>
+    <div class="mini-terminal-body">
+      <div class="terminal-logs" id="terminal-logs">
+        <div class="log-line">
+          <span class="log-time">[10:30:45]</span>
+          <span class="log-msg info">Sistema inicializado</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script principal -->
+  <script src="js/frontend.js"></script>
+</body>
 </html>
