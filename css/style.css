@@ -1001,8 +1001,8 @@ body {
 .live-terminal {
     position: fixed;
     bottom: 8rem;
-    left: 0.8rem; /* MOVIDO MAIS PARA A ESQUERDA */
-    width: 450px;
+    left: 0.8rem;
+    width: 320px; /* TERMINAL REDUZIDO */
     background: var(--bg-panel);
     border: 2px solid var(--border-accent);
     border-radius: 16px;
@@ -2351,5 +2351,6 @@ body {
         display: none !important;
     }
 }
+
 
 
