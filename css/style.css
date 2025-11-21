@@ -1928,7 +1928,7 @@ body {
 /* Mobile Live Terminal */
 @media screen and (max-width: 768px) {
     .live-terminal {
-        width: calc(100% - 1rem);
+         width: 90%; /* ou 85% */
         left: 0.5rem;
         bottom: 5rem;
         right: 0.5rem;
@@ -2351,6 +2351,7 @@ body {
         display: none !important;
     }
 }
+
 
 
 
