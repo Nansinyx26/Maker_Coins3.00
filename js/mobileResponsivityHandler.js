@@ -1,614 +1,835 @@
 /**
- * Sistema Mobile Responsivo - JavaScript
- * Funcional para qualquer dispositivo móvel
+ * Advanced Mobile System v2
+ * Otimizações críticas de performance e UX
  */
 
-class MobileSystem {
+class AdvancedMobileSystem {
     constructor() {
-        this.deviceInfo = {
-            isMobile: false,
-            isTablet: false,
-            isDesktop: false,
-            isTouchDevice: false,
-            isIOS: false,
-            isAndroid: false,
+        // Device detection
+        this.device = {
+            mobile: false,
+            tablet: false,
+            touch: false,
+            ios: false,
+            android: false,
+            standalone: window.matchMedia('(display-mode: standalone)').matches
+        };
+
+        // Screen state
+        this.screen = {
+            width: window.innerWidth,
+            height: window.innerHeight,
             orientation: 'portrait',
-            viewport: { width: 0, height: 0 }
+            dpr: window.devicePixelRatio || 1
         };
-        
-        this.breakpoints = {
-            mobile: 768,
-            tablet: 1024
+
+        // Performance
+        this.perf = {
+            connection: this.detectConnection(),
+            reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+            prefersData: false,
+            fps: 60
         };
-        
-        this.resizeTimeout = null;
-        this.orientationTimeout = null;
-        this.keyboardTimeout = null;
-        this.initialViewportHeight = window.innerHeight;
-        
+
+        // State
+        this.state = {
+            scrolled: false,
+            keyboardOpen: false,
+            pulling: false,
+            lastScrollY: 0,
+            scrollDirection: 'down'
+        };
+
+        // Timers
+        this.timers = {
+            resize: null,
+            scroll: null,
+            orientation: null,
+            fps: null
+        };
+
+        // Cache
+        this.cache = {
+            elements: new Map(),
+            intersectionObserver: null,
+            resizeObserver: null
+        };
+
         this.init();
     }
 
-    /**
-     * Inicializar sistema
-     */
-    init() {
-        console.log('📱 Inicializando Mobile System...');
-        
-        this.detectDevice();
-        this.setDeviceClasses();
-        this.setupEventListeners();
-        this.setupTouchFeedback();
-        this.handleOrientation();
-        this.optimizePerformance();
-        this.setupKeyboardDetection();
-        
-        console.log('✅ Mobile System ativo:', this.deviceInfo);
-    }
+    async init() {
+        console.log('🚀 Advanced Mobile System v2 iniciando...');
 
-    /**
-     * Detectar tipo de dispositivo
-     */
-    detectDevice() {
-        const userAgent = navigator.userAgent.toLowerCase();
-        const viewport = this.getViewportSize();
-        
-        // Detecção básica
-        this.deviceInfo.isMobile = viewport.width <= this.breakpoints.mobile;
-        this.deviceInfo.isTablet = viewport.width > this.breakpoints.mobile && 
-                                  viewport.width <= this.breakpoints.tablet;
-        this.deviceInfo.isDesktop = viewport.width > this.breakpoints.tablet;
-        
-        // Touch e SO
-        this.deviceInfo.isTouchDevice = 'ontouchstart' in window;
-        this.deviceInfo.isIOS = /iphone|ipad|ipod/i.test(userAgent);
-        this.deviceInfo.isAndroid = /android/i.test(userAgent);
-        
-        // Orientação e viewport
-        this.deviceInfo.orientation = this.getOrientation();
-        this.deviceInfo.viewport = viewport;
-    }
+        // Detecções
+        await this.detectAll();
 
-    /**
-     * Obter tamanho do viewport
-     */
-    getViewportSize() {
-        return {
-            width: window.innerWidth,
-            height: window.innerHeight
-        };
-    }
+        // Setup
+        this.setupObservers();
+        this.setupScrollHandling();
+        this.setupKeyboardHandling();
+        this.setupTouchHandling();
+        this.setupPullToRefresh();
 
-    /**
-     * Obter orientação
-     */
-    getOrientation() {
-        return window.innerHeight > window.innerWidth ? 'portrait' : 'landscape';
-    }
+        // Otimizações
+        this.applyPerformanceOptimizations();
+        this.optimizeImages();
+        this.lazyLoadComponents();
 
-    /**
-     * Definir classes CSS baseadas no dispositivo
-     */
-    setDeviceClasses() {
-        const body = document.body;
-        
-        // Remover classes existentes
-        body.classList.remove('is-mobile', 'is-tablet', 'is-desktop', 'is-touch', 'is-ios', 'is-android');
-        
-        // Adicionar classes do dispositivo
-        if (this.deviceInfo.isMobile) body.classList.add('is-mobile');
-        if (this.deviceInfo.isTablet) body.classList.add('is-tablet');
-        if (this.deviceInfo.isDesktop) body.classList.add('is-desktop');
-        if (this.deviceInfo.isTouchDevice) body.classList.add('is-touch');
-        if (this.deviceInfo.isIOS) body.classList.add('is-ios');
-        if (this.deviceInfo.isAndroid) body.classList.add('is-android');
-        
-        // Ajustar fonte base
-        this.adjustBaseFontSize();
-        
-        console.log('🏷️ Classes aplicadas:', {
-            mobile: this.deviceInfo.isMobile,
-            tablet: this.deviceInfo.isTablet,
-            desktop: this.deviceInfo.isDesktop
+        // Listeners
+        this.attachEventListeners();
+
+        console.log('✅ Mobile System ativo:', {
+            device: this.device,
+            screen: this.screen,
+            perf: this.perf
         });
     }
 
     /**
-     * Ajustar tamanho da fonte base
+     * DETECÇÃO AVANÇADA
      */
-    adjustBaseFontSize() {
-        const html = document.documentElement;
-        
-        if (this.deviceInfo.isMobile) {
-            html.style.fontSize = this.deviceInfo.viewport.width < 480 ? '14px' : '15px';
-        } else if (this.deviceInfo.isTablet) {
-            html.style.fontSize = '15px';
-        } else {
-            html.style.fontSize = '16px';
+    async detectAll() {
+        const ua = navigator.userAgent.toLowerCase();
+        const width = window.innerWidth;
+
+        // Device type
+        this.device.mobile = width <= 768;
+        this.device.tablet = width > 768 && width <= 1024;
+        this.device.touch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        this.device.ios = /iphone|ipad|ipod/.test(ua);
+        this.device.android = /android/.test(ua);
+
+        // Screen
+        this.screen.orientation = window.innerHeight > window.innerWidth ? 'portrait' : 'landscape';
+
+        // Apply classes
+        this.updateBodyClasses();
+
+        // Network info
+        if ('connection' in navigator) {
+            const conn = navigator.connection;
+            this.perf.prefersData = conn.saveData || false;
+
+            conn.addEventListener('change', () => {
+                this.perf.connection = this.detectConnection();
+                this.adjustForConnection();
+            });
         }
     }
 
-    /**
-     * Configurar listeners de eventos
-     */
-    setupEventListeners() {
-        // Resize da janela
-        window.addEventListener('resize', this.handleResize.bind(this));
-        
-        // Mudança de orientação
-        window.addEventListener('orientationchange', this.handleOrientationChange.bind(this));
-        
-        // Visibilidade da página
-        document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
-        
-        console.log('👂 Event listeners configurados');
-    }
+    detectConnection() {
+        const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
 
-    /**
-     * Tratar redimensionamento
-     */
-    handleResize() {
-        clearTimeout(this.resizeTimeout);
-        this.resizeTimeout = setTimeout(() => {
-            const oldDevice = { ...this.deviceInfo };
-            
-            this.detectDevice();
-            
-            // Se mudou tipo de dispositivo, reconfigurar
-            if (oldDevice.isMobile !== this.deviceInfo.isMobile ||
-                oldDevice.isTablet !== this.deviceInfo.isTablet) {
-                this.setDeviceClasses();
-                this.adjustForDeviceChange();
-            }
-            
-            this.adjustGridColumns();
-            
-            console.log('📏 Resize detectado:', this.deviceInfo.viewport);
-        }, 250);
-    }
+        if (!conn) return 'unknown';
 
-    /**
-     * Tratar mudança de orientação
-     */
-    handleOrientationChange() {
-        clearTimeout(this.orientationTimeout);
-        this.orientationTimeout = setTimeout(() => {
-            const oldOrientation = this.deviceInfo.orientation;
-            const newOrientation = this.getOrientation();
-            
-            if (oldOrientation !== newOrientation) {
-                this.deviceInfo.orientation = newOrientation;
-                document.body.classList.remove(`orientation-${oldOrientation}`);
-                document.body.classList.add(`orientation-${newOrientation}`);
-                
-                this.adjustForOrientation(newOrientation);
-                
-                console.log('🔄 Orientação mudou para:', newOrientation);
-            }
-        }, 100);
-    }
+        const type = conn.effectiveType;
+        const downlink = conn.downlink;
 
-    /**
-     * Tratar orientação
-     */
-    handleOrientation() {
-        document.body.classList.add(`orientation-${this.deviceInfo.orientation}`);
-        this.adjustForOrientation(this.deviceInfo.orientation);
-    }
-
-    /**
-     * Ajustar para mudança de dispositivo
-     */
-    adjustForDeviceChange() {
-        if (this.deviceInfo.isMobile) {
-            this.optimizeForMobile();
-        } else {
-            this.optimizeForDesktop();
+        if (type === 'slow-2g' || type === '2g' || downlink < 0.5) {
+            return 'slow';
+        } else if (type === '3g' || downlink < 1.5) {
+            return 'medium';
         }
+
+        return 'fast';
     }
 
-    /**
-     * Ajustar colunas do grid
-     */
-    adjustGridColumns() {
-        const statsGrid = document.querySelector('.stats-dashboard');
-        if (!statsGrid) return;
-        
-        const isLandscape = this.deviceInfo.orientation === 'landscape';
-        const width = this.deviceInfo.viewport.width;
-        
-        if (width <= 480 && !isLandscape) {
-            statsGrid.style.gridTemplateColumns = '1fr';
-        } else if (width <= 768 && isLandscape) {
-            statsGrid.style.gridTemplateColumns = 'repeat(4, 1fr)';
-        } else if (width <= 768) {
-            statsGrid.style.gridTemplateColumns = 'repeat(2, 1fr)';
-        } else {
-            statsGrid.style.removeProperty('grid-template-columns');
-        }
-    }
-
-    /**
-     * Ajustar para orientação
-     */
-    adjustForOrientation(orientation) {
-        if (!this.deviceInfo.isMobile) return;
-        
-        this.adjustGridColumns();
-        
-        // Ajustar elementos específicos
-        const elements = {
-            header: document.querySelector('.crypto-header'),
-            terminal: document.querySelector('.live-terminal'),
-            floating: document.querySelector('.floating-button')
+    updateBodyClasses() {
+        const classes = {
+            'is-mobile': this.device.mobile,
+            'is-tablet': this.device.tablet,
+            'is-touch': this.device.touch,
+            'is-ios': this.device.ios,
+            'is-android': this.device.android,
+            'is-standalone': this.device.standalone,
+            [`orientation-${this.screen.orientation}`]: true,
+            [`connection-${this.perf.connection}`]: true
         };
-        
-        if (orientation === 'landscape') {
-            if (elements.header) {
-                elements.header.style.padding = '0.2rem 0.5rem';
+
+        Object.entries(classes).forEach(([cls, active]) => {
+            document.body.classList.toggle(cls, active);
+        });
+    }
+
+    /**
+     * OBSERVERS
+     */
+    setupObservers() {
+        // Intersection Observer para lazy loading
+        this.cache.intersectionObserver = new IntersectionObserver(
+            (entries) => this.handleIntersection(entries), {
+                root: null,
+                rootMargin: '50px',
+                threshold: 0.01
             }
-            if (elements.terminal) {
-                elements.terminal.style.maxHeight = '150px';
+        );
+
+        // Resize Observer para elementos específicos
+        if ('ResizeObserver' in window) {
+            this.cache.resizeObserver = new ResizeObserver(
+                (entries) => this.handleResize(entries)
+            );
+        }
+
+        // Observe lazy elements
+        this.observeLazyElements();
+    }
+
+    observeLazyElements() {
+        const lazyElements = document.querySelectorAll('[data-lazy]');
+        lazyElements.forEach(el => {
+            this.cache.intersectionObserver.observe(el);
+        });
+    }
+
+    handleIntersection(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const el = entry.target;
+
+                // Load image
+                if (el.dataset.src) {
+                    el.src = el.dataset.src;
+                    delete el.dataset.src;
+                }
+
+                // Load component
+                if (el.dataset.component) {
+                    this.loadComponent(el, el.dataset.component);
+                }
+
+                // Stop observing
+                this.cache.intersectionObserver.unobserve(el);
             }
-        } else {
-            if (elements.header) {
-                elements.header.style.removeProperty('padding');
+        });
+    }
+
+    /**
+     * SCROLL HANDLING AVANÇADO
+     */
+    setupScrollHandling() {
+        let ticking = false;
+        let lastKnownScrollPosition = 0;
+
+        const handleScroll = () => {
+            lastKnownScrollPosition = window.scrollY;
+
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    this.updateScrollState(lastKnownScrollPosition);
+                    ticking = false;
+                });
+                ticking = true;
             }
-            if (elements.terminal) {
-                elements.terminal.style.removeProperty('max-height');
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+    }
+
+    updateScrollState(scrollY) {
+        // Direction
+        const direction = scrollY > this.state.lastScrollY ? 'down' : 'up';
+        this.state.scrollDirection = direction;
+        this.state.lastScrollY = scrollY;
+
+        // Scrolled state
+        const scrolled = scrollY > 50;
+        if (scrolled !== this.state.scrolled) {
+            this.state.scrolled = scrolled;
+            document.body.classList.toggle('scrolled', scrolled);
+        }
+
+        // Hide/show header based on scroll direction
+        if (this.device.mobile) {
+            if (direction === 'down' && scrollY > 100) {
+                this.hideHeader();
+            } else if (direction === 'up') {
+                this.showHeader();
             }
         }
     }
 
+    hideHeader() {
+        const header = document.querySelector('.crypto-header');
+        if (header && !header.classList.contains('hidden')) {
+            header.style.transform = 'translateY(-100%)';
+            header.classList.add('hidden');
+        }
+    }
+
+    showHeader() {
+        const header = document.querySelector('.crypto-header');
+        if (header && header.classList.contains('hidden')) {
+            header.style.transform = 'translateY(0)';
+            header.classList.remove('hidden');
+        }
+    }
+
     /**
-     * Configurar feedback de toque
+     * KEYBOARD HANDLING
      */
-    setupTouchFeedback() {
-        if (!this.deviceInfo.isTouchDevice) return;
-        
-        const touchSelectors = [
-            '.crypto-button',
-            '.crypto-tab',
-            '.user-card',
-            '.ticker-item',
-            '.stat-card',
-            '.floating-button'
+    setupKeyboardHandling() {
+        if (!this.device.mobile) return;
+
+        const initialHeight = window.innerHeight;
+
+        // Visual Viewport API (melhor método)
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                const currentHeight = window.visualViewport.height;
+                const diff = initialHeight - currentHeight;
+
+                this.state.keyboardOpen = diff > 150;
+                this.handleKeyboardState();
+            });
+        } else {
+            // Fallback
+            window.addEventListener('resize', () => {
+                const currentHeight = window.innerHeight;
+                const diff = initialHeight - currentHeight;
+
+                this.state.keyboardOpen = diff > 150;
+                this.handleKeyboardState();
+            });
+        }
+
+        // Focus handling
+        document.addEventListener('focusin', (e) => {
+            if (e.target.matches('input, textarea, select')) {
+                this.handleInputFocus(e.target);
+            }
+        });
+
+        document.addEventListener('focusout', (e) => {
+            if (e.target.matches('input, textarea, select')) {
+                this.handleInputBlur(e.target);
+            }
+        });
+    }
+
+    handleKeyboardState() {
+        document.body.classList.toggle('keyboard-open', this.state.keyboardOpen);
+
+        if (this.state.keyboardOpen) {
+            // Ocultar elementos que interferem
+            this.hideFloatingElements();
+        } else {
+            // Restaurar elementos
+            this.showFloatingElements();
+        }
+    }
+
+    handleInputFocus(input) {
+        // Scroll suave para o input
+        setTimeout(() => {
+            const rect = input.getBoundingClientRect();
+            const isInView = rect.top >= 0 && rect.bottom <= window.innerHeight;
+
+            if (!isInView) {
+                input.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'nearest'
+                });
+            }
+        }, 300);
+
+        // Adicionar padding bottom temporário
+        const container = input.closest('.crypto-panel');
+        if (container) {
+            container.style.paddingBottom = '50vh';
+        }
+    }
+
+    handleInputBlur(input) {
+        // Remover padding extra
+        const container = input.closest('.crypto-panel');
+        if (container) {
+            container.style.paddingBottom = '';
+        }
+    }
+
+    hideFloatingElements() {
+        const selectors = [
+            '.floating-button',
+            '.fab-container',
+            '.live-terminal',
+            '.network-indicator'
         ];
-        
-        touchSelectors.forEach(selector => {
-            const elements = document.querySelectorAll(selector);
-            elements.forEach(el => this.addTouchFeedback(el));
+
+        selectors.forEach(sel => {
+            const el = document.querySelector(sel);
+            if (el) {
+                el.style.transform = 'translateY(200px)';
+                el.style.opacity = '0';
+                el.style.pointerEvents = 'none';
+            }
         });
-        
-        console.log('👆 Touch feedback configurado');
+    }
+
+    showFloatingElements() {
+        const selectors = [
+            '.floating-button',
+            '.fab-container',
+            '.live-terminal',
+            '.network-indicator'
+        ];
+
+        selectors.forEach(sel => {
+            const el = document.querySelector(sel);
+            if (el) {
+                el.style.transform = '';
+                el.style.opacity = '';
+                el.style.pointerEvents = '';
+            }
+        });
     }
 
     /**
-     * Adicionar feedback de toque a elemento
+     * TOUCH HANDLING AVANÇADO
      */
-    addTouchFeedback(element) {
-        let touchStartTime = 0;
-        
-        const handleTouchStart = (e) => {
-            touchStartTime = Date.now();
-            element.style.transform = 'scale(0.95)';
-            element.style.transition = 'transform 0.1s ease';
+    setupTouchHandling() {
+        if (!this.device.touch) return;
+
+        // Haptic feedback simulation
+        const addRipple = (element, x, y) => {
+            const ripple = document.createElement('span');
+            ripple.className = 'touch-ripple';
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+
+            element.appendChild(ripple);
+
+            setTimeout(() => ripple.remove(), 600);
         };
-        
-        const handleTouchEnd = (e) => {
-            const touchDuration = Date.now() - touchStartTime;
-            
-            setTimeout(() => {
-                element.style.transform = '';
-                element.style.transition = '';
-            }, 150);
-            
-            // Prevenir taps acidentais muito rápidos
-            if (touchDuration < 50) {
+
+        // Touch feedback para botões
+        document.addEventListener('touchstart', (e) => {
+            const target = e.target.closest('.crypto-button, .crypto-tab, .user-card, .stat-card');
+
+            if (target) {
+                const rect = target.getBoundingClientRect();
+                const x = e.touches[0].clientX - rect.left;
+                const y = e.touches[0].clientY - rect.top;
+
+                // Vibração leve
+                if ('vibrate' in navigator) {
+                    navigator.vibrate(10);
+                }
+
+                // Ripple effect
+                if (!this.perf.reducedMotion) {
+                    addRipple(target, x, y);
+                }
+            }
+        }, { passive: true });
+
+        // Prevenir long-press menu em elementos interativos
+        const preventContext = (e) => {
+            if (e.target.closest('.crypto-button, .crypto-tab')) {
                 e.preventDefault();
             }
         };
-        
-        const handleTouchCancel = () => {
-            element.style.transform = '';
-            element.style.transition = '';
-        };
-        
-        element.addEventListener('touchstart', handleTouchStart, { passive: true });
-        element.addEventListener('touchend', handleTouchEnd, { passive: false });
-        element.addEventListener('touchcancel', handleTouchCancel, { passive: true });
+
+        document.addEventListener('contextmenu', preventContext);
     }
 
     /**
-     * Configurar detecção de teclado virtual
+     * PULL TO REFRESH
      */
-    setupKeyboardDetection() {
-        if (!this.deviceInfo.isMobile) return;
-        
-        const handleViewportChange = () => {
-            clearTimeout(this.keyboardTimeout);
-            this.keyboardTimeout = setTimeout(() => {
-                const currentHeight = window.innerHeight;
-                const heightDiff = this.initialViewportHeight - currentHeight;
-                const isKeyboardOpen = heightDiff > 150;
-                
-                document.body.classList.toggle('keyboard-open', isKeyboardOpen);
-                this.adjustForKeyboard(isKeyboardOpen);
-                
-                console.log(isKeyboardOpen ? '⌨️ Teclado aberto' : '⌨️ Teclado fechado');
-            }, 100);
-        };
-        
-        // Usar Visual Viewport API se disponível
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', handleViewportChange);
-        } else {
-            window.addEventListener('resize', handleViewportChange);
-        }
-        
-        // Prevenir zoom em inputs iOS
-        this.preventInputZoom();
-    }
+    setupPullToRefresh() {
+        if (!this.device.mobile) return;
 
-    /**
-     * Ajustar para teclado virtual
-     */
-    adjustForKeyboard(isOpen) {
-        const elements = {
-            terminal: document.querySelector('.live-terminal'),
-            floating: document.querySelector('.floating-button')
-        };
-        
-        Object.values(elements).forEach(el => {
-            if (el) el.style.display = isOpen ? 'none' : '';
-        });
-        
-        // Scroll para input ativo
-        if (isOpen) {
-            const activeInput = document.activeElement;
-            if (activeInput && activeInput.matches('input, textarea')) {
-                setTimeout(() => {
-                    activeInput.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center'
-                    });
-                }, 300);
+        let startY = 0;
+        let currentY = 0;
+        let pulling = false;
+
+        const indicator = this.createPullIndicator();
+
+        document.addEventListener('touchstart', (e) => {
+            if (window.scrollY === 0) {
+                startY = e.touches[0].pageY;
+                pulling = true;
             }
-        }
-    }
+        }, { passive: true });
 
-    /**
-     * Prevenir zoom em inputs (iOS)
-     */
-    preventInputZoom() {
-        if (!this.deviceInfo.isIOS) return;
-        
-        const inputs = document.querySelectorAll('input, textarea, select');
-        inputs.forEach(input => {
-            if (!input.style.fontSize || parseInt(input.style.fontSize) < 16) {
-                input.style.fontSize = '16px';
+        document.addEventListener('touchmove', (e) => {
+            if (!pulling) return;
+
+            currentY = e.touches[0].pageY;
+            const diff = currentY - startY;
+
+            if (diff > 0 && diff < 150) {
+                this.state.pulling = true;
+                document.body.classList.add('pulling');
+                indicator.style.transform = `translateX(-50%) translateY(${Math.min(diff, 80)}px)`;
             }
-        });
+        }, { passive: true });
+
+        document.addEventListener('touchend', () => {
+            if (pulling && this.state.pulling) {
+                const diff = currentY - startY;
+
+                if (diff > 80) {
+                    this.handleRefresh();
+                }
+            }
+
+            pulling = false;
+            this.state.pulling = false;
+            document.body.classList.remove('pulling');
+            indicator.style.transform = '';
+        }, { passive: true });
     }
 
-    /**
-     * Tratar mudança de visibilidade
-     */
-    handleVisibilityChange() {
-        if (document.hidden) {
-            this.pauseAnimations();
-        } else {
-            this.resumeAnimations();
+    createPullIndicator() {
+        const existing = document.querySelector('.pull-to-refresh');
+        if (existing) return existing;
+
+        const indicator = document.createElement('div');
+        indicator.className = 'pull-to-refresh';
+        indicator.innerHTML = '<i class="fas fa-arrow-down"></i> Puxe para atualizar';
+        document.body.appendChild(indicator);
+
+        return indicator;
+    }
+
+    async handleRefresh() {
+        console.log('🔄 Refresh triggered');
+
+        const indicator = document.querySelector('.pull-to-refresh');
+        if (indicator) {
+            indicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Atualizando...';
+        }
+
+        // Vibração
+        if ('vibrate' in navigator) {
+            navigator.vibrate(50);
+        }
+
+        // Simular refresh (implementar sua lógica aqui)
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Recarregar dados
+        if (typeof window.refreshData === 'function') {
+            await window.refreshData();
+        }
+
+        if (indicator) {
+            indicator.innerHTML = '<i class="fas fa-check"></i> Atualizado!';
+            setTimeout(() => {
+                indicator.innerHTML = '<i class="fas fa-arrow-down"></i> Puxe para atualizar';
+            }, 1000);
         }
     }
 
     /**
-     * Pausar animações quando página oculta
+     * PERFORMANCE OPTIMIZATIONS
      */
-    pauseAnimations() {
-        const animatedElements = document.querySelectorAll([
-            '.loading-spinner',
-            '.terminal-cursor',
-            '[data-animation]'
-        ].join(', '));
-        
-        animatedElements.forEach(el => {
-            el.style.animationPlayState = 'paused';
-        });
-    }
+    applyPerformanceOptimizations() {
+        if (!this.device.mobile) return;
 
-    /**
-     * Retomar animações
-     */
-    resumeAnimations() {
-        const animatedElements = document.querySelectorAll([
-            '.loading-spinner',
-            '.terminal-cursor',
-            '[data-animation]'
-        ].join(', '));
-        
-        animatedElements.forEach(el => {
-            el.style.animationPlayState = 'running';
-        });
-    }
-
-    /**
-     * Otimizar performance
-     */
-    optimizePerformance() {
-        // Reduzir animações em mobile
-        if (this.deviceInfo.isMobile) {
-            document.documentElement.style.setProperty('--animation-duration', '0.2s');
-            document.documentElement.style.setProperty('--transition-duration', '0.15s');
+        // Remover Matrix Background
+        const matrix = document.getElementById('matrix-bg');
+        if (matrix) {
+            matrix.remove();
         }
-        
-        // Otimizar scroll
-        this.optimizeScrolling();
-        
-        console.log('⚡ Performance otimizada');
+
+        // Simplificar animações
+        if (this.perf.reducedMotion || this.perf.connection === 'slow') {
+            document.documentElement.style.setProperty('--animation-duration', '0.1s');
+            document.documentElement.style.setProperty('--transition-duration', '0.1s');
+        }
+
+        // Ajustar qualidade baseado na conexão
+        if (this.perf.connection === 'slow') {
+            this.reducedQualityMode();
+        }
+
+        // Limitar FPS em dispositivos antigos
+        if (this.screen.dpr < 2) {
+            this.limitFPS();
+        }
+
+        // Desabilitar hover states em touch
+        if (this.device.touch) {
+            document.body.classList.add('no-hover');
+        }
     }
 
-    /**
-     * Otimizar scrolling
-     */
-    optimizeScrolling() {
-        const scrollContainers = document.querySelectorAll([
-            '.terminal-output',
-            '.market-ticker',
-            '.tab-group',
-            '.notification-container'
-        ].join(', '));
-        
-        scrollContainers.forEach(container => {
-            container.style.webkitOverflowScrolling = 'touch';
-            container.style.overscrollBehavior = 'contain';
+    reducedQualityMode() {
+        console.log('📶 Modo economia ativado');
+
+        // Reduzir sombras
+        document.documentElement.style.setProperty('--box-shadow-quality', 'low');
+
+        // Simplificar gradientes
+        const panels = document.querySelectorAll('.crypto-panel, .stat-card');
+        panels.forEach(panel => {
+            panel.style.background = '#1a1a1a';
         });
     }
 
-    /**
-     * Otimizar para mobile
-     */
-    optimizeForMobile() {
-        // Reduzir elementos pesados
-        document.documentElement.style.setProperty('--particle-count', '5');
-        
-        // Melhorar performance
-        document.body.style.touchAction = 'manipulation';
-        
-        console.log('📱 Otimizado para mobile');
-    }
+    limitFPS() {
+        let lastFrame = 0;
+        const targetFPS = 30;
+        const frameTime = 1000 / targetFPS;
 
-    /**
-     * Otimizar para desktop
-     */
-    optimizeForDesktop() {
-        // Restaurar elementos completos
-        document.documentElement.style.removeProperty('--particle-count');
-        
-        // Remover otimizações mobile
-        document.body.style.removeProperty('touch-action');
-        
-        console.log('🖥️ Otimizado para desktop');
-    }
+        const throttleAnimations = (callback) => {
+            const now = performance.now();
+            const elapsed = now - lastFrame;
 
-    /**
-     * Adicionar listeners dinâmicos para novos elementos
-     */
-    addDynamicListeners() {
-        // Observer para novos elementos
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                mutation.addedNodes.forEach((node) => {
-                    if (node.nodeType === Node.ELEMENT_NODE && this.deviceInfo.isTouchDevice) {
-                        // Adicionar touch feedback a novos elementos
-                        const touchElements = node.querySelectorAll([
-                            '.crypto-button',
-                            '.crypto-tab',
-                            '.user-card',
-                            '.ticker-item'
-                        ].join(', '));
-                        
-                        touchElements.forEach(el => this.addTouchFeedback(el));
-                    }
-                });
+            if (elapsed >= frameTime) {
+                lastFrame = now;
+                callback();
+            }
+        };
+
+        // Aplicar throttle em animações
+        this.timers.fps = setInterval(() => {
+            throttleAnimations(() => {
+                // Suas animações aqui
             });
-        });
-        
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
+        }, frameTime);
     }
 
     /**
-     * API pública - Obter informações do dispositivo
+     * IMAGE OPTIMIZATION
      */
-    getDeviceInfo() {
-        return { ...this.deviceInfo };
+    optimizeImages() {
+        const images = document.querySelectorAll('img:not([loading])');
+
+        images.forEach(img => {
+            // Lazy loading
+            img.loading = 'lazy';
+
+            // Decode async
+            img.decoding = 'async';
+
+            // Baixar qualidade em conexão lenta
+            if (this.perf.connection === 'slow' && img.dataset.lowres) {
+                img.src = img.dataset.lowres;
+            }
+        });
     }
 
     /**
-     * API pública - Verificar se é mobile
+     * LAZY LOAD COMPONENTS
+     */
+    lazyLoadComponents() {
+        const components = document.querySelectorAll('[data-component]');
+
+        components.forEach(el => {
+            this.cache.intersectionObserver.observe(el);
+        });
+    }
+
+    async loadComponent(container, componentName) {
+        console.log(`📦 Carregando componente: ${componentName}`);
+
+        // Skeleton
+        container.innerHTML = '<div class="skeleton" style="height: 100px;"></div>';
+
+        // Simular carregamento (implementar sua lógica)
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        // Carregar conteúdo real
+        if (typeof window[`load${componentName}`] === 'function') {
+            await window[`load${componentName}`](container);
+        }
+    }
+
+    /**
+     * EVENT LISTENERS
+     */
+    attachEventListeners() {
+        // Resize
+        window.addEventListener('resize', () => {
+            clearTimeout(this.timers.resize);
+            this.timers.resize = setTimeout(() => this.handleWindowResize(), 200);
+        });
+
+        // Orientation
+        window.addEventListener('orientationchange', () => {
+            clearTimeout(this.timers.orientation);
+            this.timers.orientation = setTimeout(() => this.handleOrientationChange(), 100);
+        });
+
+        // Visibility
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                this.pauseExpensiveOperations();
+            } else {
+                this.resumeExpensiveOperations();
+            }
+        });
+
+        // Online/Offline
+        window.addEventListener('online', () => this.handleOnline());
+        window.addEventListener('offline', () => this.handleOffline());
+    }
+
+    handleWindowResize() {
+        const oldMobile = this.device.mobile;
+
+        this.screen.width = window.innerWidth;
+        this.screen.height = window.innerHeight;
+        this.device.mobile = this.screen.width <= 768;
+
+        if (oldMobile !== this.device.mobile) {
+            console.log('📱 Mudança de dispositivo detectada');
+            this.updateBodyClasses();
+            this.applyPerformanceOptimizations();
+        }
+    }
+
+    handleOrientationChange() {
+        const oldOrientation = this.screen.orientation;
+        this.screen.orientation = window.innerHeight > window.innerWidth ? 'portrait' : 'landscape';
+
+        if (oldOrientation !== this.screen.orientation) {
+            console.log(`📱 Orientação: ${this.screen.orientation}`);
+            this.updateBodyClasses();
+
+            // Ajustar layout
+            this.adjustForOrientation();
+        }
+    }
+
+    adjustForOrientation() {
+        const stats = document.querySelector('.stats-dashboard');
+        if (!stats) return;
+
+        if (this.screen.orientation === 'landscape' && this.screen.height < 500) {
+            stats.style.gridTemplateColumns = 'repeat(4, 1fr)';
+        } else if (this.screen.width < 480) {
+            stats.style.gridTemplateColumns = 'repeat(2, 1fr)';
+        }
+    }
+
+    handleOnline() {
+        console.log('🌐 Online');
+        this.showNotification('Conexão restaurada', 'success');
+    }
+
+    handleOffline() {
+        console.log('📡 Offline');
+        this.showNotification('Sem conexão com a internet', 'error');
+    }
+
+    pauseExpensiveOperations() {
+        console.log('⏸️ Pausando operações');
+
+        if (window.priceUpdateInterval) {
+            clearInterval(window.priceUpdateInterval);
+        }
+    }
+
+    resumeExpensiveOperations() {
+        console.log('▶️ Resumindo operações');
+
+        if (typeof window.updateCryptoPrices === 'function') {
+            window.priceUpdateInterval = setInterval(window.updateCryptoPrices, 30000);
+        }
+    }
+
+    /**
+     * UTILITIES
+     */
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            </div>
+            <button class="notification-close">&times;</button>
+        `;
+
+        const container = document.querySelector('.notification-container') || this.createNotificationContainer();
+        container.appendChild(notification);
+
+        // Auto remove
+        setTimeout(() => notification.remove(), 3000);
+
+        // Manual close
+        notification.querySelector('.notification-close').addEventListener('click', () => {
+            notification.remove();
+        });
+    }
+
+    createNotificationContainer() {
+        const container = document.createElement('div');
+        container.className = 'notification-container';
+        document.body.appendChild(container);
+        return container;
+    }
+
+    /**
+     * PUBLIC API
      */
     isMobile() {
-        return this.deviceInfo.isMobile;
+        return this.device.mobile;
     }
 
-    /**
-     * API pública - Verificar se é tablet
-     */
     isTablet() {
-        return this.deviceInfo.isTablet;
+        return this.device.tablet;
     }
 
-    /**
-     * API pública - Verificar se suporta toque
-     */
-    isTouchDevice() {
-        return this.deviceInfo.isTouchDevice;
-    }
-
-    /**
-     * API pública - Obter orientação atual
-     */
     getOrientation() {
-        return this.deviceInfo.orientation;
+        return this.screen.orientation;
     }
 
-    /**
-     * API pública - Forçar redetecção
-     */
+    getConnection() {
+        return this.perf.connection;
+    }
+
     refresh() {
-        console.log('🔄 Atualizando detecção...');
-        this.detectDevice();
-        this.setDeviceClasses();
-        this.adjustGridColumns();
-        this.handleOrientation();
+        this.detectAll();
+        this.applyPerformanceOptimizations();
     }
 
-    /**
-     * Limpar recursos
-     */
     destroy() {
-        clearTimeout(this.resizeTimeout);
-        clearTimeout(this.orientationTimeout);
-        clearTimeout(this.keyboardTimeout);
-        
-        console.log('🗑️ Mobile System finalizado');
-    }
-}
+        // Clean timers
+        Object.values(this.timers).forEach(timer => {
+            if (timer) clearTimeout(timer);
+        });
 
-// Auto-inicializar quando DOM estiver pronto
-function initMobileSystem() {
-    if (typeof window !== 'undefined') {
-        window.mobileSystem = new MobileSystem();
-        
-        // API global simplificada
-        window.isMobile = () => window.mobileSystem.isMobile();
-        window.isTablet = () => window.mobileSystem.isTablet();
-        window.isTouchDevice = () => window.mobileSystem.isTouchDevice();
-    }
-}
-
-// Inicializar
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initMobileSystem);
-} else {
-    initMobileSystem();
-}
-
-// Reagir a mudanças de tamanho (debounced)
-let resizeTimer;
-window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-        if (window.mobileSystem) {
-            window.mobileSystem.refresh();
+        // Disconnect observers
+        if (this.cache.intersectionObserver) {
+            this.cache.intersectionObserver.disconnect();
         }
-    }, 250);
-});
 
-// Exportar para uso em módulos
+        if (this.cache.resizeObserver) {
+            this.cache.resizeObserver.disconnect();
+        }
+
+        console.log('🗑️ Mobile System destroyed');
+    }
+}
+
+// Auto-initialize
+(function() {
+    if (typeof window !== 'undefined') {
+        const init = () => {
+            window.advancedMobile = new AdvancedMobileSystem();
+
+            // Global helpers
+            window.isMobile = () => window.advancedMobile ? .isMobile() || false;
+            window.isTablet = () => window.advancedMobile ? .isTablet() || false;
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    }
+})();
+
+// Export
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = MobileSystem;
+    module.exports = AdvancedMobileSystem;
 }
