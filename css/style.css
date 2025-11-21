@@ -1001,8 +1001,8 @@ body {
 .live-terminal {
     position: fixed;
     bottom: 8rem;
-    left: 2rem;
-    width: 450px;
+    left: 0rem;
+    width: 360px;
     background: var(--bg-panel);
     border: 2px solid var(--border-accent);
     border-radius: 16px;
@@ -2351,3 +2351,4 @@ body {
         display: none !important;
     }
 }
+
