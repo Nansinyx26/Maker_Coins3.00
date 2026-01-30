@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Maker Coins - Criar Conta</title>
+    <link href="css/bank-redesign.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="nb-blobs">
+        <div class="nb-blob nb-blob-1"></div>
+        <div class="nb-blob nb-blob-2"></div>
+        <div class="nb-blob nb-blob-3"></div>
+        <div class="nb-blob nb-blob-4"></div>
+    </div>
+
+    <div class="nb-container" style="display: flex; align-items: center; min-height: 100vh; padding-top: 40px;">
+        <div class="nb-card nb-animate" style="width: 100%; max-width: 450px; margin: 0 auto; padding: 40px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <img src="img/MKR.png" alt="Logo"
+                    style="width: 80px; height: 80px; border-radius: 50%; box-shadow: 0 0 20px var(--nb-primary); margin-bottom: 20px;">
+                <h2 style="color: var(--nb-primary); font-size: 28px;">Criar sua Conta</h2>
+                <p style="color: var(--nb-text-secondary);">Entre para o ecossistema Maker</p>
+            </div>
+
+            <form id="register-form" onsubmit="handleRegister(event)">
+                <div class="nb-form-group">
+                    <label class="nb-label">Nome Completo</label>
+                    <input type="text" id="reg-name" class="nb-input" placeholder="Seu nome" required>
+                </div>
+
+                <div class="nb-form-group">
+                    <label class="nb-label">E-mail Educacional</label>
+                    <input type="email" id="reg-email" class="nb-input" placeholder="seu@email.com" required>
+                </div>
+
+                <div class="nb-form-group">
+                    <label class="nb-label">Sua Turma</label>
+                    <select id="reg-class" class="nb-input"
+                        style="background: rgba(0,0,0,0.3); border-radius: 0; color: white;" required>
+                        <option value="" disabled selected>Selecione sua sala</option>
+                        <option value="5A">5º Ano A</option>
+                        <option value="5B">5º Ano B</option>
+                        <option value="5C">5º Ano C</option>
+                        <option value="3A">3º Ano A</option>
+                    </select>
+                </div>
+
+                <div class="nb-form-group">
+                    <label class="nb-label">Senha de Acesso</label>
+                    <input type="password" id="reg-pass" class="nb-input" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="nb-btn-primary" style="margin-top: 20px;">
+                    CADASTRAR NO BLOCKCHAIN
+                </button>
+            </form>
+
+            <div style="text-align: center; margin-top: 24px;">
+                <p style="color: var(--nb-text-secondary); font-size: 14px;">
+                    Já tem uma conta? <a href="login.html"
+                        style="color: var(--nb-primary-light); text-decoration: none; font-weight: 600;">Faça Login</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/index.js"></script>
+    <script>
+        async function handleRegister(event) {
+            event.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const turma = document.getElementById('reg-class').value;
+
+            // Simulação de salvamento no MongoDB via fetch futuro
+            // const response = await fetch('/api/register', { ... });
+
+            addSystemLog(`Solicitação de registro para ${name} (${turma})`, 'info');
+
+            alert('Conta criada com sucesso! (Simulação Backend/MongoDB Atlas)');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+
+</html>
