@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Maker Coins - 3º Ano</title>
+  <link href="css/bank-redesign.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+  <header class="nb-header">
+    <div class="nb-header-top">
+      <div class="nb-logo">
+        <img src="img/MKR.png" alt="Maker Coins Logo">
+        <div class="nb-logo-text">
+          <div class="nb-logo-main">MAKER COINS</div>
+          <div class="nb-logo-sub">3º ANO FUNDAMENTAL</div>
+        </div>
+      </div>
+      <div class="nb-profile-icons">
+        <button class="nb-icon-btn" onclick="window.location.href='index.html'" title="Voltar">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="nb-welcome nb-animate">
+      Bem-vindo, Aluno do 3º Ano
+    </div>
+  </header>
+
+  <div class="nb-container">
+    <div class="nb-animate nb-delay-1">
+      <div class="nb-card" onclick="window.location.href='frontend3.html'">
+        <div class="nb-card-title">
+          <i class="fas fa-trophy"></i>
+          <span>Leaderboard</span>
+        </div>
+        <div class="nb-card-amount">Ver Ranking</div>
+        <div class="nb-card-desc">Veja quem são os maiores coletores de coins.</div>
+      </div>
+
+      <div class="nb-card" onclick="authenticate()">
+        <div class="nb-card-title">
+          <i class="fas fa-sync-alt"></i>
+          <span>Gerenciamento</span>
+        </div>
+        <div class="nb-card-amount">Atualização</div>
+        <div class="nb-card-desc">Área restrita para professores.</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/index.js"></script>
+  <script>
+    function authenticate() {
+      const senha = prompt('Digite a senha para acessar a página de atualização:');
+      if (senha === 'Mantra2222') {
+        window.location.href = 'atualizacao3.html';
+      } else {
+        alert('Senha incorreta. Acesso negado.');
+      }
+    }
+  </script>
+</body>
+
+</html>

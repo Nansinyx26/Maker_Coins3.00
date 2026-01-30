@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Maker Coins - Portal</title>
+  <link href="css/bank-redesign.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+  <!-- Nubank Style Header -->
+  <header class="nb-header">
+    <div class="nb-header-top">
+      <div class="nb-logo">
+        <img src="img/MKR.png" alt="Maker Coins Logo">
+        <div class="nb-logo-text">
+          <div class="nb-logo-main">MAKER COINS</div>
+          <div class="nb-logo-sub">SISTEMA EDUCACIONAL</div>
+        </div>
+      </div>
+      <div class="nb-profile-icons">
+        <button class="nb-icon-btn" onclick="toggleInfoModal()" title="Informações">
+          <i class="fas fa-question"></i>
+        </button>
+        <button class="nb-icon-btn" title="Perfil">
+          <i class="fas fa-user-circle"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="nb-welcome nb-animate">
+      Olá, Estudante
+    </div>
+  </header>
+
+  <div class="nb-container">
+    <!-- Horizontal Quick Actions -->
+    <div class="nb-actions-scroll nb-animate nb-delay-1">
+      <div class="nb-action-item">
+        <button class="nb-action-btn" onclick="window.location.href='frontend.html'">
+          <i class="fas fa-trophy"></i>
+        </button>
+        <span class="nb-action-label">Ranking</span>
+      </div>
+      <div class="nb-action-item">
+        <button class="nb-action-btn" onclick="authenticate()">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+        <span class="nb-action-label">Atualizar</span>
+      </div>
+      <div class="nb-action-item">
+        <button class="nb-action-btn">
+          <i class="fas fa-history"></i>
+        </button>
+        <span class="nb-action-label">Extrato</span>
+      </div>
+      <div class="nb-action-item">
+        <button class="nb-action-btn">
+          <i class="fas fa-gift"></i>
+        </button>
+        <span class="nb-action-label">Prêmios</span>
+      </div>
+    </div>
+
+    <!-- Main Sections as Cards -->
+    <div class="nb-animate nb-delay-2">
+      <div class="nb-card" onclick="window.location.href='frontend.html'">
+        <div class="nb-card-title">
+          <i class="fas fa-graduation-cap"></i>
+          <span>5º ANO Fundamental</span>
+        </div>
+        <div class="nb-card-amount">Acessar Portal</div>
+        <div class="nb-card-desc">Visualize o ranking e saldo dos estudantes.</div>
+      </div>
+
+      <div class="nb-card" onclick="authenticate()">
+        <div class="nb-card-title">
+          <i class="fas fa-cogs"></i>
+          <span>Gerenciamento</span>
+        </div>
+        <div class="nb-card-amount">Atualização de Coins</div>
+        <div class="nb-card-desc">Área restrita para controle de transações.</div>
+      </div>
+
+      <div class="nb-card" onclick="window.location.href='index3.html'">
+        <div class="nb-card-title">
+          <i class="fas fa-star"></i>
+          <span>3º ANO Fundamental</span>
+        </div>
+        <div class="nb-card-amount">Portal Exclusivo</div>
+        <div class="nb-card-desc">Acesso restrito para turmas do 3º ano.</div>
+      </div>
+    </div>
+
+    <!-- Stats Card -->
+    <div class="nb-card nb-animate nb-delay-3" style="cursor: default;">
+      <div class="nb-card-title">
+        <i class="fas fa-chart-line"></i>
+        <span>Status do Ecossistema</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+        <div>
+          <div style="font-size: 12px; color: var(--nb-text-secondary);">Usuários</div>
+          <div style="font-weight: 700;" id="total-users">0</div>
+        </div>
+        <div>
+          <div style="font-size: 12px; color: var(--nb-text-secondary);">Coins em Giro</div>
+          <div style="font-weight: 700;" id="total-coins">0</div>
+        </div>
+        <div>
+          <div style="font-size: 12px; color: var(--nb-text-secondary);">Blockchain</div>
+          <div style="font-weight: 700;" class="nb-neon-green">Ativo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- Modal of Information (Adapted) -->
+  <div id="info-modal" class="info-modal">
+    <div class="nb-container" style="margin-top: 50px;">
+      <div class="nb-card" style="cursor: default; padding: 40px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+          <h3 style="color: var(--nb-purple); font-size: 24px;">Informações</h3>
+          <button onclick="toggleInfoModal()"
+            style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
+        </div>
+        <p style="color: var(--nb-text-secondary); margin-bottom: 20px;">Sistema de gamificação educativa baseado em
+          blockchain fictício. Desenvolvido para incentivar o aprendizado.</p>
+        <div style="border-top: 1px solid var(--nb-border); padding-top: 20px;">
+          <h4 style="margin-bottom: 10px;">Desenvolvido por Renan Farias</h4>
+          <a href="https://www.linkedin.com/in/renan-de-oliveira-farias-66a9b412b/" target="_blank"
+            style="color: var(--nb-purple); text-decoration: none; font-weight: 600;">
+            <i class="fab fa-linkedin"></i> LinkedIn Profile
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    /* Direct adaptation for modal show/hide */
+    .info-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      display: none;
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+    }
+
+    .info-modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+
+  <script src="js/index.js"></script>
+  <!-- JavaScript do Mobile Responsivity Handler -->
+  <script src="js/mobileResponsivityHandler.js"></script>
+</body>
+
+</html>
