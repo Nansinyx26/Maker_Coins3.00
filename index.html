@@ -10,6 +10,12 @@
 </head>
 
 <body>
+  <div class="nb-blobs">
+    <div class="nb-blob nb-blob-1"></div>
+    <div class="nb-blob nb-blob-2"></div>
+    <div class="nb-blob nb-blob-3"></div>
+    <div class="nb-blob nb-blob-4"></div>
+  </div>
   <!-- Nubank Style Header -->
   <header class="nb-header">
     <div class="nb-header-top">
@@ -51,13 +57,13 @@
         <span class="nb-action-label">Atualizar</span>
       </div>
       <div class="nb-action-item">
-        <button class="nb-action-btn">
+        <button class="nb-action-btn" onclick="openExtraModal('extrato')">
           <i class="fas fa-history"></i>
         </button>
         <span class="nb-action-label">Extrato</span>
       </div>
       <div class="nb-action-item">
-        <button class="nb-action-btn">
+        <button class="nb-action-btn" onclick="openExtraModal('premios')">
           <i class="fas fa-gift"></i>
         </button>
         <span class="nb-action-label">Prêmios</span>
@@ -65,7 +71,7 @@
     </div>
 
     <!-- Main Sections as Cards -->
-    <div class="nb-animate nb-delay-2">
+    <div class="nb-grid nb-animate nb-delay-2">
       <div class="nb-card" onclick="window.location.href='frontend.html'">
         <div class="nb-card-title">
           <i class="fas fa-graduation-cap"></i>
@@ -123,18 +129,34 @@
     <div class="nb-container" style="margin-top: 50px;">
       <div class="nb-card" style="cursor: default; padding: 40px;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
-          <h3 style="color: var(--nb-purple); font-size: 24px;">Informações</h3>
+          <h3 style="color: var(--nb-primary); font-size: 24px;">Informações</h3>
           <button onclick="toggleInfoModal()"
-            style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
+            style="background: none; border: none; font-size: 20px; cursor: pointer; color: white;">&times;</button>
         </div>
         <p style="color: var(--nb-text-secondary); margin-bottom: 20px;">Sistema de gamificação educativa baseado em
           blockchain fictício. Desenvolvido para incentivar o aprendizado.</p>
         <div style="border-top: 1px solid var(--nb-border); padding-top: 20px;">
           <h4 style="margin-bottom: 10px;">Desenvolvido por Renan Farias</h4>
           <a href="https://www.linkedin.com/in/renan-de-oliveira-farias-66a9b412b/" target="_blank"
-            style="color: var(--nb-purple); text-decoration: none; font-weight: 600;">
+            style="color: var(--nb-primary-light); text-decoration: none; font-weight: 600;">
             <i class="fab fa-linkedin"></i> LinkedIn Profile
           </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Extra Modal for Extrato/Premios -->
+  <div id="extra-modal" class="extra-modal">
+    <div class="extra-modal-content">
+      <div class="nb-card" style="margin-bottom: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+          <h3 id="extra-modal-title" style="color: var(--nb-primary); font-size: 22px;">Título</h3>
+          <button onclick="closeExtraModal()"
+            style="background: none; border: none; font-size: 24px; cursor: pointer; color: white;">&times;</button>
+        </div>
+        <div id="extra-modal-body">
+          <!-- Populated by JS -->
         </div>
       </div>
     </div>

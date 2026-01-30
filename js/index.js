@@ -643,10 +643,150 @@ window.addEventListener('unhandledrejection', function (e) {
 });
 
 /**
- * Export functions for global access
+ * Extra Modals Logic (Extrato & Premios)
  */
+function openExtraModal(type) {
+    const modal = document.getElementById('extra-modal');
+    const title = document.getElementById('extra-modal-title');
+    const body = document.getElementById('extra-modal-body');
+
+    if (!modal || !title || !body) return;
+
+    body.innerHTML = '';
+
+    if (type === 'extrato') {
+        title.innerHTML = '<i class="fas fa-history"></i> Extrato Global';
+        renderGlobalHistory(body);
+    } else if (type === 'premios') {
+        title.innerHTML = '<i class="fas fa-gift"></i> Prêmios Maker';
+        renderAwards(body);
+    }
+
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    addSystemLog(`Modal extra aberto: ${type}`, 'info');
+}
+
+function closeExtraModal() {
+    const modal = document.getElementById('extra-modal');
+    if (modal) {
+        modal.classList.remove('show');
+        document.body.style.overflow = 'auto';
+        addSystemLog('Modal extra fechado', 'info');
+    }
+}
+
+function renderGlobalHistory(container) {
+    const history = [];
+
+    // Scan all history in localStorage
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.includes('_historico')) {
+            try {
+                const studentName = key.split('_')[1];
+                const studentHistory = JSON.parse(localStorage.getItem(key)) || [];
+                studentHistory.forEach(entry => {
+                    history.push({
+                        ...entry,
+                        student: studentName.charAt(0).toUpperCase() + studentName.slice(1)
+                    });
+                });
+            } catch (e) {
+                console.error('Error parsing history for', key);
+            }
+        }
+    }
+
+    // Sort by date (descending)
+    history.sort((a, b) => new Date(b.data || 0) - new Date(a.data || 0));
+
+    // Limit to latest 15
+    const latest = history.slice(0, 15);
+
+    if (latest.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:var(--nb-text-secondary); padding: 20px;">Nenhuma transação registrada no sistema.</p>';
+        return;
+    }
+
+    const timeline = document.createElement('div');
+    timeline.className = 'timeline';
+
+    latest.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'timeline-item';
+        div.innerHTML = `
+            <div style="font-size: 12px; color: var(--nb-primary-light);">${item.data || 'Data N/D'}</div>
+            <div style="font-weight: 600;">${item.student}</div>
+            <div style="font-size: 14px; color: var(--nb-text-secondary);">${item.descricao || 'Transferência corrigida'}</div>
+            <div style="font-weight: 700; color: ${item.valor >= 0 ? 'var(--nb-neon-green)' : '#ff4d4d'};">
+                ${item.valor >= 0 ? '+' : ''}${item.valor} MKR
+            </div>
+        `;
+        timeline.appendChild(div);
+    });
+
+    container.appendChild(timeline);
+}
+
+function renderAwards(container) {
+    // Development Notice
+    const notice = document.createElement('div');
+    notice.style.cssText = `
+        background: rgba(255, 100, 0, 0.15);
+        border: 1px solid #ff6400;
+        color: #ffb86c;
+        padding: 12px;
+        border-radius: 12px;
+        font-size: 13px;
+        text-align: center;
+        margin-bottom: 20px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    `;
+    notice.innerHTML = '<i class="fas fa-tools"></i> MÓDULO EM DESENVOLVIMENTO';
+    container.appendChild(notice);
+
+    const awards = [
+        { id: 1, name: 'Certificado Maker', cost: 50, icon: 'fa-certificate', desc: 'Certificado digital de participação.' },
+        { id: 2, name: 'Voucher Cantina', cost: 200, icon: 'fa-hamburger', desc: 'Vale lanche promocional.' },
+        { id: 3, name: 'Medalha Bronze', cost: 500, icon: 'fa-medal', desc: 'Medalha física de bronze.' },
+        { id: 4, name: 'Kit Maker Pro', cost: 1000, icon: 'fa-tools', desc: 'Ferramentas exclusivas para projetos.' }
+    ];
+
+    const grid = document.createElement('div');
+    grid.style.display = 'grid';
+    grid.style.gridTemplateColumns = '1fr 1fr';
+    grid.style.gap = '16px';
+    grid.style.marginTop = '10px';
+
+    awards.forEach(award => {
+        const item = document.createElement('div');
+        item.className = 'nb-card';
+        item.style.padding = '16px';
+        item.style.margin = '0';
+        item.style.textAlign = 'center';
+        item.style.opacity = '0.7'; // Fade out a bit to show it's disabled
+        item.innerHTML = `
+            <i class="fas ${award.icon}" style="font-size: 24px; color: var(--nb-primary-light); margin-bottom: 8px;"></i>
+            <div style="font-size: 14px; font-weight: 700;">${award.name}</div>
+            <div style="font-size: 12px; color: var(--nb-neon-green); margin: 4px 0;">${award.cost} MKR</div>
+            <button class="nb-btn-primary" style="padding: 8px; font-size: 10px; margin-top: 8px; background: #444; cursor: not-allowed;" disabled>BLOQUEADO</button>
+        `;
+        grid.appendChild(item);
+    });
+
+    container.appendChild(grid);
+}
+
+// Global Exports
 window.authenticate = authenticate;
 window.toggleInfoModal = toggleInfoModal;
 window.toggleTheme = toggleTheme;
 window.createSystemBackup = createSystemBackup;
 window.runSystemDiagnostics = runSystemDiagnostics;
+window.openExtraModal = openExtraModal;
+window.closeExtraModal = closeExtraModal;
