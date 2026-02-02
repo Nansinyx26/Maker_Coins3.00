@@ -413,35 +413,69 @@ body::before {
     text-align: right;
 }
 
-/* Form Styles */
+/* Form Styles Enhanced */
+.nb-form-container {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    border-radius: 30px;
+    padding: 40px;
+    width: 100%;
+    max-width: 480px;
+}
+
 .nb-form-group {
-    margin-bottom: 24px;
+    margin-bottom: 28px;
+    position: relative;
 }
 
 .nb-label {
     display: block;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 700;
     color: var(--nb-text-secondary);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: var(--nb-transition);
 }
 
 .nb-input {
     width: 100%;
-    border: none;
-    border-bottom: 2px solid var(--nb-border);
-    padding: 12px 0;
-    font-size: 18px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 16px 20px;
+    font-size: 16px;
     font-weight: 500;
-    background: transparent;
     color: var(--nb-text-primary);
     transition: var(--nb-transition);
+    backdrop-filter: blur(5px);
+}
+
+/* Fix visibility for select options on dark background */
+select.nb-input option {
+    background-color: #0d0d2b;
+    /* Dark specific color to ensure readability */
+    color: white;
+}
+
+.nb-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
 }
 
 .nb-input:focus {
     outline: none;
-    border-bottom-color: var(--nb-neon-blue);
-    box-shadow: 0 1px 0 var(--nb-neon-blue);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--nb-primary-light);
+    box-shadow: 0 0 15px rgba(160, 102, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.nb-input:focus+.nb-label,
+.nb-form-group:focus-within .nb-label {
+    color: var(--nb-primary-light);
 }
 
 .nb-btn-primary {
@@ -636,4 +670,32 @@ body::before {
     .nb-card {
         padding: 20px;
     }
+}
+/* Password Toggle Wrapper */
+.nb-password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.nb-password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--nb-text-secondary);
+    cursor: pointer;
+    z-index: 10;
+    transition: var(--nb-transition);
+}
+
+.nb-password-toggle:hover {
+    color: var(--nb-primary-light);
+}
+
+/* Fix visibility for select options on dark background */
+select.nb-input option {
+    background-color: #0d0d2b !important;
+    color: white !important;
 }

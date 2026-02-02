@@ -70,7 +70,10 @@
 
         <div class="nb-form-group">
           <label class="nb-label">NOME DO ESTUDANTE</label>
-          <input type="text" id="name" class="nb-input" placeholder="Quem vai receber?" autocomplete="off">
+          <div style="position: relative;">
+            <input type="text" id="name" class="nb-input" placeholder="Quem vai receber?" autocomplete="off">
+            <div id="autocomplete-list" class="nb-autocomplete"></div>
+          </div>
         </div>
 
         <div class="nb-form-group">
@@ -96,6 +99,36 @@
         <button class="nb-btn-primary" onclick="saveData()">
           <i class="fas fa-check-circle"></i> Executar Transação
         </button>
+      </div>
+
+      <!-- Import Section (Admin Only) -->
+      <div class="nb-card admin-only" style="display: none; cursor: default;">
+        <div class="nb-card-title">
+          <i class="fas fa-file-import"></i>
+          <span>Importar Dados (Master)</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <button class="nb-btn-secondary" style="font-size: 14px; padding: 10px;"
+              onclick="document.getElementById('fileUpload').click()">Lista (.txt)</button>
+            <input type="file" id="fileUpload" accept=".txt" style="display: none;" onchange="mostrarNomeArquivo()">
+            <span id="nome-arquivo" style="font-size: 12px; color: var(--nb-text-secondary);">Escolha os nomes</span>
+          </div>
+          <button class="nb-btn-primary" style="font-size: 14px;" onclick="importarAlunos()">Importar Nomes</button>
+
+          <hr style="border: none; border-top: 1px solid var(--nb-border); margin: 8px 0;">
+
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <button class="nb-btn-secondary" style="font-size: 14px; padding: 10px;"
+              onclick="document.getElementById('fileUploadData').click()">Dados (.txt)</button>
+            <input type="file" id="fileUploadData" accept=".txt" style="display: none;"
+              onchange="mostrarNomeArquivoData()">
+            <span id="nome-arquivo-data" style="font-size: 12px; color: var(--nb-text-secondary);">Escolha
+              nome+coins</span>
+          </div>
+          <button class="nb-btn-primary" style="font-size: 14px;" onclick="importarDadosComCoins()">Importar Dados
+            Completos</button>
+        </div>
       </div>
 
       <!-- List of Saved Data -->
@@ -204,6 +237,43 @@
       max-width: 400px;
     }
 
+    .nb-autocomplete {
+      position: absolute;
+      top: calc(100% + 5px);
+      left: 0;
+      right: 0;
+      background: rgba(26, 26, 46, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      max-height: 250px;
+      overflow-y: auto;
+      display: none;
+      scrollbar-width: thin;
+    }
+
+    .autocomplete-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    .autocomplete-item:last-child {
+      border-bottom: none;
+    }
+
+    .autocomplete-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+      padding-left: 20px;
+    }
+
     @keyframes slideDown {
       from {
         transform: translateY(-20px);
@@ -217,6 +287,15 @@
     }
   </style>
 
+  <script src="js/api-client.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = JSON.parse(localStorage.getItem('makerUser') || '{}');
+      if (user.role === 'admin') {
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
+      }
+    });
+  </script>
   <script src="js/atualizacao3.js"></script>
   <script src="js/mobileResponsivityHandler.js"></script>
 </body>

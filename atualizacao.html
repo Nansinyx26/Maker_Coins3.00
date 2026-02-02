@@ -43,6 +43,7 @@
       <button class="nb-tab active" onclick="setClass('5A')" data-class="5A">5º ANO A</button>
       <button class="nb-tab" onclick="setClass('5B')" data-class="5B">5º ANO B</button>
       <button class="nb-tab" onclick="setClass('5C')" data-class="5C">5º ANO C</button>
+      <button class="nb-tab" onclick="setClass('3A')" data-class="3A">3º ANO A</button>
     </div>
 
     <!-- Quick Stats Card -->
@@ -127,11 +128,11 @@
         </div>
       </div>
 
-      <!-- Import Section -->
-      <div class="nb-card" style="cursor: default;">
+      <!-- Import Section (Admin Only) -->
+      <div class="nb-card admin-only" style="display: none; cursor: default;">
         <div class="nb-card-title">
           <i class="fas fa-file-import"></i>
-          <span>Importar Dados</span>
+          <span>Importar Dados (Master)</span>
         </div>
         <div style="display: flex; flex-direction: column; gap: 12px;">
           <div style="display: flex; align-items: center; gap: 12px;">
@@ -276,25 +277,38 @@
   <style>
     .nb-autocomplete {
       position: absolute;
-      top: 100%;
+      top: calc(100% + 5px);
       left: 0;
       right: 0;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      z-index: 50;
-      max-height: 200px;
+      background: rgba(26, 26, 46, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      max-height: 250px;
       overflow-y: auto;
+      scrollbar-width: thin;
     }
 
     .autocomplete-item {
       padding: 12px 16px;
-      border-bottom: 1px solid var(--nb-border);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       cursor: pointer;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    .autocomplete-item:last-child {
+      border-bottom: none;
     }
 
     .autocomplete-item:hover {
-      background: var(--nb-card-bg);
+      background: rgba(255, 255, 255, 0.1);
+      padding-left: 20px;
     }
 
     #alert {
@@ -329,6 +343,30 @@
     }
   </style>
 
+  <script src="js/api-client.js"></script>
+  <script>
+    async function checkAdmin() {
+      if (!localStorage.getItem('makerToken')) {
+        window.location.href = 'login.html';
+        return;
+      }
+      try {
+        const user = await apiClient.getMe();
+        if (user.role !== 'admin') {
+          // Instead of redirecting immediately, we could allow them to see the page but with limited options
+          // But for now, let's keep the redirect as requested for security, 
+          // but show admin parts if they are indeed admin.
+          alert('Acesso restrito para administradores.');
+          window.location.href = 'index.html';
+        } else {
+          document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
+        }
+      } catch (e) {
+        window.location.href = 'login.html';
+      }
+    }
+    checkAdmin();
+  </script>
   <script src="js/atualizacao.js"></script>
   <!-- JavaScript do Mobile Responsivity Handler -->
   <script src="js/mobileResponsivityHandler.js"></script>

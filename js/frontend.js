@@ -216,64 +216,46 @@ function updateSortButtons(sortType) {
 /**
  * Enhanced Leaderboard Display - CORREÇÃO DO TOTAL MKR
  */
-function displayLeaderboard() {
+/**
+ * Enhanced Leaderboard Display - API INTEGRATED
+ */
+async function displayLeaderboard() {
     const leaderboard = document.getElementById('leaderboard');
     if (!leaderboard) return;
 
-    leaderboard.innerHTML = '';
+    if (!isLoading) showLoading();
 
-    let totalNomes = 0;
-    let totalCoins = 0; // Esta variável vai armazenar o total correto
-    let students = [];
+    try {
+        const students = await apiClient.getRanking(currentClass);
+        leaderboardData = students;
 
-    // Collect student data - CORREÇÃO AQUI
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
+        leaderboard.innerHTML = '';
 
-        if (key.startsWith(currentClass) && !key.includes('_historico')) {
-            const name = key.split('_')[1];
-            const coinValue = localStorage.getItem(key);
-            const coins = parseInt(coinValue, 10) || 0; // Garantir que seja número
+        let totalNomes = students.length;
+        let totalCoins = students.reduce((sum, s) => sum + s.saldo, 0);
 
-            // VALIDAÇÃO ADICIONAL - só conta se for um número válido
-            if (!isNaN(coins) && coinValue !== null && coinValue !== '') {
-                totalNomes++;
-                totalCoins += coins; // Soma direta sem problemas de tipo
+        // Apply sorting
+        const sortedStudents = sortStudents([...students], currentSort);
 
-                const displayName = formatStudentName(name);
-                students.push({
-                    name: displayName,
-                    coins: coins,
-                    originalName: name,
-                    key: key
-                });
+        // Create student cards
+        displayStudentCards(sortedStudents);
 
-                // Log para debug (opcional)
-                console.log(`Estudante: ${displayName}, Coins: ${coins}, Total atual: ${totalCoins}`);
-            }
+        // Update counters
+        updateCounters(totalNomes, totalCoins);
+
+        // Show empty state if needed
+        if (students.length === 0) {
+            displayEmptyMessage();
         }
+
+        addLog(`${totalNomes} estudantes carregados da turma ${currentClass}`, 'info');
+    } catch (error) {
+        console.error('Error fetching ranking:', error);
+        addLog(`Erro ao carregar ranking: ${error.message}`, 'error');
+        showToast('Erro ao carregar ranking', 'error');
+    } finally {
+        hideLoading();
     }
-
-    // Store for future use
-    leaderboardData = students;
-
-    // Apply sorting
-    students = sortStudents(students, currentSort);
-
-    // Create student cards
-    displayStudentCards(students);
-
-    // Update counters - GARANTINDO QUE OS VALORES CORRETOS SEJAM PASSADOS
-    updateCounters(totalNomes, totalCoins);
-
-    // Show empty state if needed
-    if (students.length === 0) {
-        displayEmptyMessage();
-    }
-
-    // Log com valores finais para verificação
-    addLog(`${totalNomes} estudantes carregados da turma ${currentClass} - Total MKR: ${formatNumber(totalCoins)}`, 'info');
-    console.log(`TOTAL FINAL - Nomes: ${totalNomes}, Coins: ${totalCoins}`);
 }
 
 function formatStudentName(name) {
@@ -283,17 +265,17 @@ function formatStudentName(name) {
 function sortStudents(students, sortType) {
     if (sortType === 'alphabetical') {
         return students.sort((a, b) =>
-            a.name.localeCompare(b.name, 'pt-BR', {
+            a.nome.localeCompare(b.nome, 'pt-BR', {
                 sensitivity: 'base',
                 ignorePunctuation: true
             })
         );
     } else {
         return students.sort((a, b) => {
-            if (b.coins !== a.coins) {
-                return b.coins - a.coins;
+            if (b.saldo !== a.saldo) {
+                return b.saldo - a.saldo;
             }
-            return a.name.localeCompare(b.name, 'pt-BR', {
+            return a.nome.localeCompare(b.nome, 'pt-BR', {
                 sensitivity: 'base',
                 ignorePunctuation: true
             });
@@ -310,16 +292,16 @@ function displayStudentCards(students) {
         item.className = 'nb-list-item';
 
         const rankPrefix = currentSort === 'coins' ? index + 1 : '•';
-        const initials = student.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        const initials = student.nome ? student.nome.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '??';
 
         item.innerHTML = `
             <div class="nb-list-rank">${rankPrefix}</div>
             <div class="nb-list-avatar">${initials}</div>
             <div class="nb-list-info">
-                <div class="nb-list-name">${student.name}</div>
-                <div class="nb-list-class">${currentClass} - Maker Coins Student</div>
+                <div class="nb-list-name">${student.nome}</div>
+                <div class="nb-list-class">${student.turma || currentClass} - Maker Coins Student</div>
             </div>
-            <div class="nb-list-amount">${formatNumber(student.coins)} MKR</div>
+            <div class="nb-list-amount">${formatNumber(student.saldo)} MKR</div>
         `;
 
         item.onclick = () => showStudentDetails(student);
@@ -352,28 +334,15 @@ function createPositionBadge(index, sortType) {
     return `<div class="position-badge ${badgeClass}">${badgeIcon}</div>`;
 }
 
-function showStudentDetails(student) {
-    const historyKey = `${student.key}_historico`;
-    const history = JSON.parse(localStorage.getItem(historyKey)) || [];
-
-    let detailsHtml = `
+async function showStudentDetails(student) {
+    // In full-stack mode, this could fetch student-specific history
+    showToast(`
         <div class="student-details">
-            <h3><i class="fas fa-user"></i> ${student.name}</h3>
-            <div class="student-stats">
-                <div class="stat">
-                    <i class="fas fa-coins"></i>
-                    <span>Saldo Atual: ${formatNumber(student.coins)} MKR</span>
-                </div>
-                <div class="stat">
-                    <i class="fas fa-history"></i>
-                    <span>Transações: ${history.length}</span>
-                </div>
-            </div>
+            <h3><i class="fas fa-user"></i> ${student.nome}</h3>
+            <p>Saldo: ${formatNumber(student.saldo)} MKR</p>
+            <p>Turma: ${student.turma}</p>
         </div>
-    `;
-
-    showToast(detailsHtml, 'info');
-    addLog(`Detalhes visualizados: ${student.name}`, 'info');
+    `, 'info');
 }
 
 /**
@@ -437,6 +406,12 @@ function displayEmptyMessage() {
     const leaderboard = document.getElementById('leaderboard');
     if (!leaderboard) return;
 
+    const user = JSON.parse(localStorage.getItem('makerUser') || '{}');
+    const adminButton = user.role === 'admin' ? `
+                <button class="nb-btn-primary" style="padding: 10px 20px; font-size: 14px;" onclick="window.location.href='atualizacao.html'">
+                    <i class="fas fa-plus"></i> Adicionar Estudantes
+                </button>` : '';
+
     leaderboard.innerHTML = `
         <div class="nb-empty-state">
             <div class="nb-empty-icon">
@@ -448,9 +423,7 @@ function displayEmptyMessage() {
                 <button class="nb-btn-secondary" style="padding: 10px 20px; font-size: 14px;" onclick="refreshLeaderboard()">
                     <i class="fas fa-sync-alt"></i> Atualizar
                 </button>
-                <button class="nb-btn-primary" style="padding: 10px 20px; font-size: 14px;" onclick="window.location.href='atualizacao.html'">
-                    <i class="fas fa-plus"></i> Adicionar Estudantes
-                </button>
+                ${adminButton}
             </div>
         </div>
     `;

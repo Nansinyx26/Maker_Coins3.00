@@ -2,6 +2,7 @@
 // Initialize global variables at the top
 let selectedClass = '';
 let selectedAutocompleteIndex = -1;
+let currentClassStudents = []; // Store students for the selected class
 let fabMenuOpen = false;
 let terminalMinimized = true;
 let priceUpdateInterval = null;
@@ -244,7 +245,10 @@ function setClass(className) {
 /**
  * Enhanced Data Management
  */
-function saveData() {
+/**
+ * Enhanced Data Management - API INTEGRATED
+ */
+async function saveData() {
     const nameInput = document.getElementById('name')?.value.trim();
     const coinsInput = parseInt(document.getElementById('coins')?.value, 10);
     const isNegative = document.getElementById('isNegative')?.checked;
@@ -262,46 +266,36 @@ function saveData() {
         return;
     }
 
-    const coins = isNegative ? -Math.abs(coinsInput) : Math.abs(coinsInput);
-    const nomeNormalizado = removerAcentos(nameInput).toLowerCase().replace(/\s+/g, ' ').trim();
-    const key = `${selectedClass}_${nomeNormalizado}`;
-    const historicoKey = `${key}_historico`;
-
+    // In this simplified version, we'll assume the input name corresponds to an email or we find it
+    // For now, let's assume we use the name to find the user in the selected class
     try {
-        const valorAtual = parseInt(localStorage.getItem(key)) || 0;
-        const novoValor = valorAtual + coins;
+        const users = await apiClient.adminGetUsersByClass(selectedClass);
+        const user = users.find(u => u.nome.toLowerCase() === nameInput.toLowerCase());
 
-        localStorage.setItem(key, novoValor);
+        if (!user) {
+            showNotification('Estudante não encontrado nesta turma.', 'error');
+            return;
+        }
 
-        // Update history
-        let historico = JSON.parse(localStorage.getItem(historicoKey)) || [];
-        historico.push({
-            data: getCurrentTimestamp(),
+        const coins = isNegative ? -Math.abs(coinsInput) : Math.abs(coinsInput);
+
+        await apiClient.adminUpdateCoins({
+            email: user.email,
             valor: coins,
-            justificativa: isNegative ? justificativa : '',
-            tipo: coins > 0 ? 'credito' : 'debito'
+            descricao: isNegative ? justificativa : 'Crédito administrativo',
+            secret: 'Mantra2222'
         });
-        localStorage.setItem(historicoKey, JSON.stringify(historico));
 
-        // Clear form
         clearForm();
-
-        // Update displays
         displaySavedData();
 
-        // Show success
         const transactionType = coins > 0 ? 'Crédito' : 'Débito';
-        showNotification(`${transactionType} de ${Math.abs(coins)} MKR para ${nameInput} processado com sucesso!`, 'success');
-        addTerminalLog(`Transação processada: ${nameInput} ${coins > 0 ? '+' : ''}${coins} MKR`, 'success');
-
-        // Log transaction details
-        if (isNegative && justificativa) {
-            addTerminalLog(`Motivo da penalidade: ${justificativa}`, 'warning');
-        }
+        showNotification(`${transactionType} de ${Math.abs(coins)} MKR para ${user.nome} processado com sucesso!`, 'success');
+        addTerminalLog(`Transação processada: ${user.nome} ${coins > 0 ? '+' : ''}${coins} MKR`, 'success');
 
     } catch (error) {
         console.error('Error saving data:', error);
-        showNotification('Erro ao salvar dados. Tente novamente.', 'error');
+        showNotification('Erro ao salvar dados: ' + error.message, 'error');
         addTerminalLog(`Erro na transação: ${error.message}`, 'error');
     }
 }
@@ -325,91 +319,64 @@ function clearForm() {
 /**
  * Enhanced Display Functions
  */
-function displaySavedData() {
+async function displaySavedData() {
     const savedDataContainer = document.getElementById('savedData');
     if (!savedDataContainer) return;
 
-    savedDataContainer.innerHTML = '';
+    if (!selectedClass) return;
 
-    let totalNomes = 0;
-    let totalCoins = 0;
-    const students = [];
+    try {
+        const students = await apiClient.adminGetUsersByClass(selectedClass);
+        currentClassStudents = students; // Update the global list for autocomplete
+        savedDataContainer.innerHTML = '';
 
-    // Collect student data
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key.startsWith(selectedClass) && !key.includes('_historico')) {
-            const nomeNormalizado = key.split('_')[1];
-            const coins = parseInt(localStorage.getItem(key)) || 0;
-            const nomeFormatado = nomeNormalizado.charAt(0).toUpperCase() + nomeNormalizado.slice(1);
+        let totalCoins = 0;
 
-            students.push({ key, nomeFormatado, coins });
-            totalNomes++;
-            totalCoins += coins;
-        }
-    }
+        // Sort by coins (descending)
+        students.sort((a, b) => b.saldo - a.saldo);
 
-    // Sort by coins (descending)
-    students.sort((a, b) => b.coins - a.coins);
-
-    // Create user items
-    students.forEach((student, index) => {
-        const item = document.createElement('div');
-        item.className = 'nb-list-item';
-        item.style.padding = '12px 16px';
-        item.innerHTML = `
-            <div class="nb-list-rank">#${index + 1}</div>
-            <div class="nb-list-info">
-                <div class="nb-list-name" style="font-size: 14px;">${student.nomeFormatado}</div>
-            </div>
-            <div class="nb-list-amount" style="font-size: 14px;">${student.coins.toLocaleString()} MKR</div>
-            <button class="nb-icon-btn" style="width: 32px; height: 32px; font-size: 12px; margin-left: 10px; color: #ff4757; background: #fff5f5;" onclick="deleteData('${student.key}')">
-                <i class="fas fa-trash"></i>
-            </button>
-        `;
-        savedDataContainer.appendChild(item);
-    });
-
-    // Update counters
-    const contadorNomes = document.getElementById('contador-nomes');
-    const contadorCoins = document.getElementById('contador-coins');
-
-    if (contadorNomes) contadorNomes.textContent = totalNomes;
-    if (contadorCoins) contadorCoins.textContent = totalCoins.toLocaleString();
-
-    if (students.length === 0) {
-        savedDataContainer.innerHTML = `
-            <div class="nb-empty-state" style="padding: 30px 10px; margin: 10px 0;">
-                <div class="nb-empty-icon" style="font-size: 32px; margin-bottom: 10px;">
-                    <i class="fas fa-users"></i>
+        students.forEach((student, index) => {
+            totalCoins += student.saldo;
+            const item = document.createElement('div');
+            item.className = 'nb-list-item';
+            item.style.padding = '12px 16px';
+            item.innerHTML = `
+                <div class="nb-list-rank">#${index + 1}</div>
+                <div class="nb-list-info">
+                    <div class="nb-list-name" style="font-size: 14px;">${student.nome}</div>
+                    <div style="font-size: 10px; color: var(--nb-text-secondary);">${student.email}</div>
                 </div>
-                <h4 class="nb-empty-title" style="font-size: 16px;">Nenhum estudante cadastrado</h4>
-                <p class="nb-empty-desc" style="font-size: 12px; margin-bottom: 0;">Use o formulário acima para adicionar.</p>
-            </div>
-        `;
+                <div class="nb-list-amount" style="font-size: 14px;">${student.saldo.toLocaleString()} MKR</div>
+                <button class="nb-icon-btn" style="width: 32px; height: 32px; font-size: 12px; margin-left: 10px; color: #ff4757; background: #fff5f5;" onclick="deleteData('${student.email}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            savedDataContainer.appendChild(item);
+        });
+
+        const contadorNomes = document.getElementById('contador-nomes');
+        const contadorCoins = document.getElementById('contador-coins');
+
+        if (contadorNomes) contadorNomes.textContent = students.length;
+        if (contadorCoins) contadorCoins.textContent = totalCoins.toLocaleString();
+
+        if (students.length === 0) {
+            savedDataContainer.innerHTML = `<p style="text-align:center; padding: 20px;">Nenhum estudante nesta turma.</p>`;
+        }
+    } catch (error) {
+        console.error('Error fetching students:', error);
     }
 }
 
-function deleteData(key) {
-    if (!confirm('Tem certeza que deseja excluir este estudante? Esta ação não pode ser desfeita.')) {
-        return;
-    }
+async function deleteData(email) {
+    if (!confirm('Tem certeza que deseja excluir este estudante?')) return;
 
     try {
-        const studentName = key.split('_')[1];
-        localStorage.removeItem(key);
-        localStorage.removeItem(`${key}_historico`);
-
+        await apiClient.adminDeleteUser({ email, secret: 'Mantra2222' });
+        showNotification('Estudante removido com sucesso.', 'success');
         displaySavedData();
-        setupAutocomplete();
-
-        showNotification(`Estudante ${studentName} removido com sucesso.`, 'success');
-        addTerminalLog(`Estudante removido: ${studentName}`, 'warning');
-
     } catch (error) {
-        console.error('Error deleting data:', error);
-        showNotification('Erro ao excluir dados.', 'error');
-        addTerminalLog(`Erro ao remover estudante: ${error.message}`, 'error');
+        showNotification('Erro ao remover: ' + error.message, 'error');
     }
 }
 
@@ -645,7 +612,7 @@ function importarDadosComCoins() {
 /**
  * Group Operations
  */
-function alterarTodos(acao) {
+async function alterarTodos(acao) {
     if (!selectedClass) {
         showNotification('Selecione uma turma antes.', 'error');
         return;
@@ -657,122 +624,68 @@ function alterarTodos(acao) {
         return;
     }
 
-    if (!confirm(`Tem certeza que deseja ${acao === 'add' ? 'adicionar' : 'remover'} ${valorInput} MKR ${acao === 'add' ? 'para' : 'de'} todos os estudantes da turma ${selectedClass}?`)) {
-        return;
+    if (!confirm(`Confirmar ação em grupo para a turma ${selectedClass}?`)) return;
+
+    try {
+        await apiClient.adminUpdateCoinsBulk({
+            turma: selectedClass,
+            valor: valorInput,
+            action: acao,
+            secret: 'Mantra2222'
+        });
+
+        showNotification('Ação em grupo processada.', 'success');
+        displaySavedData();
+    } catch (error) {
+        showNotification('Erro: ' + error.message, 'error');
     }
-
-    const valorAplicado = acao === 'remove' ? -Math.abs(valorInput) : Math.abs(valorInput);
-    let affectedCount = 0;
-
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key.startsWith(selectedClass) && !key.includes('_historico')) {
-            const atual = parseInt(localStorage.getItem(key)) || 0;
-            const novoValor = atual + valorAplicado;
-            localStorage.setItem(key, novoValor);
-
-            // Add to history
-            const historicoKey = `${key}_historico`;
-            let historico = JSON.parse(localStorage.getItem(historicoKey)) || [];
-            historico.push({
-                data: getCurrentTimestamp(),
-                valor: valorAplicado,
-                justificativa: acao === 'remove' ? 'Remoção em grupo' : 'Distribuição em grupo',
-                tipo: valorAplicado > 0 ? 'credito' : 'debito'
-            });
-            localStorage.setItem(historicoKey, JSON.stringify(historico));
-
-            affectedCount++;
-        }
-    }
-
-    // Clear input
-    const coinsGroupInput = document.getElementById('coinsGroup');
-    if (coinsGroupInput) coinsGroupInput.value = '';
-
-    displaySavedData();
-
-    const actionText = acao === 'add' ? 'adicionados' : 'removidos';
-    showNotification(`${valorInput} MKR ${actionText} para ${affectedCount} estudantes da turma ${selectedClass}.`, 'success');
-    addTerminalLog(`Operação em grupo: ${valorAplicado > 0 ? '+' : ''}${valorAplicado} MKR para ${affectedCount} estudantes`, 'success');
 }
 
 /**
  * History Functions
  */
-function mostrarHistorico() {
-    const nomeInput = document.getElementById('pesquisa')?.value.trim();
+async function mostrarHistorico() {
+    const nomeInput = document.getElementById('name')?.value.trim(); // Changed 'pesquisa' to 'name' to match typical usage here
 
     if (!selectedClass || !nomeInput) {
-        showNotification('Selecione uma turma e digite o nome.', 'error');
+        showNotification('Selecione uma turma e o estudante.', 'error');
         return;
     }
 
-    const nomeNormalizado = removerAcentos(nomeInput).toLowerCase().replace(/\s+/g, ' ').trim();
-    const nome = nomeNormalizado.charAt(0).toUpperCase() + nomeNormalizado.slice(1);
-    const historicoKey = `${selectedClass}_${nomeNormalizado}_historico`;
-    const historico = JSON.parse(localStorage.getItem(historicoKey)) || [];
+    try {
+        const users = await apiClient.adminGetUsersByClass(selectedClass);
+        const user = users.find(u => u.nome.toLowerCase() === nomeInput.toLowerCase());
 
-    const container = document.getElementById('historicoAluno');
-    if (!container) return;
+        if (!user) {
+            showNotification('Estudante não encontrado.', 'error');
+            return;
+        }
 
-    container.innerHTML = `
-        <div class="history-header">
-            <h3><i class="fas fa-user"></i> Histórico de ${nome}</h3>
-            <div class="history-stats">
-                <span class="stat"><i class="fas fa-list"></i> ${historico.length} transações</span>
-            </div>
-        </div>
-    `;
+        const historico = await apiClient.adminGetUserHistory(user.email);
+        const container = document.getElementById('historicoAluno');
+        if (!container) {
+            // If it's the main panel, we might need a modal or just different container
+            // For now let's hope section-history exists or we show as toast
+            showNotification(`Histórico de ${user.nome}: ${historico.length} transações.`, 'info');
+            return;
+        }
 
-    if (historico.length === 0) {
-        container.innerHTML += `
-            <div class="empty-history">
-                <i class="fas fa-history"></i>
-                <p>Nenhum histórico encontrado</p>
-                <small>Este estudante ainda não possui transações registradas</small>
-            </div>
-        `;
-        return;
+        container.innerHTML = `<h3>Histórico de ${user.nome}</h3>`;
+
+        if (historico.length === 0) {
+            container.innerHTML += '<p>Nenhuma transação.</p>';
+        } else {
+            const list = document.createElement('div');
+            historico.forEach(item => {
+                const div = document.createElement('div');
+                div.innerHTML = `${new Date(item.data).toLocaleString()}: ${item.valor} MKR - ${item.descricao}`;
+                list.appendChild(div);
+            });
+            container.appendChild(list);
+        }
+    } catch (error) {
+        showNotification('Erro: ' + error.message, 'error');
     }
-
-    const lista = document.createElement('div');
-    lista.className = 'history-list';
-
-    // Sort history by date (newest first)
-    historico.sort((a, b) => new Date(b.data) - new Date(a.data));
-
-    historico.forEach((item, index) => {
-        const itemDiv = document.createElement('div');
-        itemDiv.className = `history-item ${item.tipo || 'neutral'}`;
-
-        const valorClass = item.valor > 0 ? 'positive' : 'negative';
-        const valorIcon = item.valor > 0 ? 'fa-plus' : 'fa-minus';
-
-        itemDiv.innerHTML = `
-            <div class="history-main">
-                <div class="history-info">
-                    <span class="history-date"><i class="fas fa-clock"></i> ${item.data}</span>
-                    <span class="history-value ${valorClass}">
-                        <i class="fas ${valorIcon}"></i>
-                        ${item.valor > 0 ? '+' : ''}${item.valor} MKR
-                    </span>
-                </div>
-                ${item.justificativa ? `
-                    <button class="justification-btn" onclick="showJustification('${index}', '${encodeURIComponent(item.justificativa)}')">
-                        <i class="fas fa-info-circle"></i>
-                        Ver Justificativa
-                    </button>
-                ` : ''}
-            </div>
-        `;
-
-        lista.appendChild(itemDiv);
-    });
-
-    container.appendChild(lista);
-
-    addTerminalLog(`Histórico exibido para ${nome}: ${historico.length} transações`, 'info');
 }
 
 function showJustification(index, justificativa) {
@@ -835,22 +748,23 @@ function setupAutocomplete() {
 
 function getMatchingNames(input) {
     const inputNormalized = removerAcentos(input).toLowerCase();
-    const matches = [];
 
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key.startsWith(selectedClass) && !key.includes('_historico')) {
-            const nomeNormalizado = key.split('_')[1];
-            const nomeFormatado = nomeNormalizado.charAt(0).toUpperCase() + nomeNormalizado.slice(1);
+    return currentClassStudents
+        .filter(student => removerAcentos(student.nome).toLowerCase().includes(inputNormalized))
+        .map(student => ({
+            nome: student.nome,
+            coins: student.saldo
+        }))
+        .sort((a, b) => a.nome.localeCompare(b.nome));
+}
 
-            if (removerAcentos(nomeNormalizado).includes(inputNormalized)) {
-                const coins = parseInt(localStorage.getItem(key)) || 0;
-                matches.push({ nome: nomeFormatado, coins });
-            }
-        }
+function selectAutocompleteItem(name) {
+    const nameInput = document.getElementById('name');
+    if (nameInput) {
+        nameInput.value = name;
+        hideAutocomplete();
+        addTerminalLog(`Estudante selecionado: ${name}`, 'info');
     }
-
-    return matches.sort((a, b) => a.nome.localeCompare(b.nome));
 }
 
 function showAutocompleteList(matches) {

@@ -27,11 +27,16 @@
         </div>
       </div>
       <div class="nb-profile-icons">
+        <button class="nb-icon-btn nb-profile-btn" onclick="openProfileModal()" title="Meu Perfil">
+          <img id="header-profile-img" src="" alt="Perfil"
+            style="display: none; width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+          <i id="header-profile-icon" class="fas fa-user-circle"></i>
+        </button>
         <button class="nb-icon-btn" onclick="toggleInfoModal()" title="Informações">
           <i class="fas fa-question"></i>
         </button>
-        <button class="nb-icon-btn" title="Perfil">
-          <i class="fas fa-user-circle"></i>
+        <button class="nb-icon-btn" onclick="apiClient.logout()" title="Sair">
+          <i class="fas fa-sign-out-alt"></i>
         </button>
       </div>
     </div>
@@ -50,7 +55,7 @@
         </button>
         <span class="nb-action-label">Ranking</span>
       </div>
-      <div class="nb-action-item">
+      <div class="nb-action-item admin-only" style="display: none;">
         <button class="nb-action-btn" onclick="authenticate()">
           <i class="fas fa-sync-alt"></i>
         </button>
@@ -81,7 +86,7 @@
         <div class="nb-card-desc">Visualize o ranking e saldo dos estudantes.</div>
       </div>
 
-      <div class="nb-card" onclick="authenticate()">
+      <div class="nb-card admin-only" onclick="authenticate()" style="display: none;">
         <div class="nb-card-title">
           <i class="fas fa-cogs"></i>
           <span>Gerenciamento</span>
@@ -162,6 +167,49 @@
     </div>
   </div>
 
+  <!-- Profile Modal -->
+  <div id="profile-modal" class="info-modal">
+    <div class="nb-container" style="margin-top: 50px;">
+      <div class="nb-card" style="cursor: default; padding: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+          <h3 style="color: var(--nb-primary); font-size: 22px;">Meu Perfil</h3>
+          <button onclick="closeProfileModal()"
+            style="background: none; border: none; font-size: 24px; cursor: pointer; color: white;">&times;</button>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div style="position: relative; display: inline-block;">
+            <img id="profile-preview" src="img/MKR.png"
+              style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--nb-primary);">
+            <button onclick="document.getElementById('avatar-input').click()"
+              style="position: absolute; bottom: 0; right: 0; background: var(--nb-primary); border: none; border-radius: 50%; width: 30px; height: 30px; color: white; cursor: pointer;">
+              <i class="fas fa-camera" style="font-size: 12px;"></i>
+            </button>
+          </div>
+          <input type="file" id="avatar-input" accept="image/*" style="display: none;"
+            onchange="handleImageUpload(event)">
+        </div>
+
+        <div class="nb-form-group">
+          <label class="nb-label">NOME COMPLETO</label>
+          <input type="text" id="profile-nome" class="nb-input" placeholder="Seu nome">
+        </div>
+
+        <div class="nb-form-group">
+          <label class="nb-label">IDADE</label>
+          <input type="number" id="profile-idade" class="nb-input" placeholder="Sua idade">
+        </div>
+
+        <button class="nb-btn-primary" onclick="saveProfile()" style="margin-top: 10px;">
+          <i class="fas fa-save"></i> Salvar Alterações
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden canvas for WebP conversion -->
+  <canvas id="conversion-canvas" style="display: none;"></canvas>
+
   <style>
     /* Direct adaptation for modal show/hide */
     .info-modal {
@@ -183,6 +231,52 @@
     }
   </style>
 
+  <script src="js/api-client.js"></script>
+  <script src="js/profile.js"></script>
+  <script>
+    // Check authentication
+    if (!localStorage.getItem('makerToken')) {
+      window.location.href = 'login.html';
+    }
+
+    // Refresh user data on load
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const user = await apiClient.getMe();
+        localStorage.setItem('makerUser', JSON.stringify(user));
+        document.querySelector('.nb-welcome').textContent = 'Olá, ' + user.nome;
+
+        // Update header profile image
+        updateHeaderProfileImage(user);
+
+        // Role-based visibility
+        if (user.role === 'admin') {
+          document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
+        }
+      } catch (error) {
+        console.error('Failed to refresh user data:', error);
+        // If profile fetch fails, token might be invalid
+        if (error.message.includes('autenticado') || error.message.includes('Token')) {
+          apiClient.logout();
+        }
+      }
+    });
+
+    // Function to update header profile image
+    function updateHeaderProfileImage(user) {
+      const headerImg = document.getElementById('header-profile-img');
+      const headerIcon = document.getElementById('header-profile-icon');
+
+      if (user && user.avatar && headerImg && headerIcon) {
+        headerImg.src = user.avatar;
+        headerImg.style.display = 'block';
+        headerIcon.style.display = 'none';
+      } else if (headerImg && headerIcon) {
+        headerImg.style.display = 'none';
+        headerIcon.style.display = 'block';
+      }
+    }
+  </script>
   <script src="js/index.js"></script>
   <!-- JavaScript do Mobile Responsivity Handler -->
   <script src="js/mobileResponsivityHandler.js"></script>

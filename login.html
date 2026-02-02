@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Maker Coins - Login</title>
+    <link href="css/bank-redesign.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="nb-blobs">
+        <div class="nb-blob nb-blob-1"></div>
+        <div class="nb-blob nb-blob-2"></div>
+        <div class="nb-blob nb-blob-3"></div>
+        <div class="nb-blob nb-blob-4"></div>
+    </div>
+
+    <div class="nb-container"
+        style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px;">
+        <div class="nb-form-container nb-animate">
+            <div style="text-align: center; margin-bottom: 40px;">
+                <div style="position: relative; display: inline-block;">
+                    <img src="img/MKR.png" alt="Logo"
+                        style="width: 100px; height: 100px; border-radius: 50%; border: 2px solid var(--nb-primary-light); box-shadow: 0 0 30px rgba(130, 10, 209, 0.4); margin-bottom: 24px;">
+                    <div
+                        style="position: absolute; bottom: 20px; right: 0; background: var(--nb-neon-green); width: 24px; height: 24px; border-radius: 50%; border: 4px solid #050510; box-shadow: 0 0 10px rgba(57, 255, 20, 0.5);">
+                    </div>
+                </div>
+                <h2
+                    style="color: var(--nb-white); font-size: 32px; font-weight: 800; letter-spacing: -1px; margin-bottom: 8px;">
+                    Bem-vindo(a)</h2>
+                <p style="color: var(--nb-text-secondary); font-size: 16px;">Acesse sua carteira Maker</p>
+            </div>
+
+            <form id="login-form">
+                <div class="nb-form-group">
+                    <label class="nb-label">E-mail</label>
+                    <input type="email" id="login-email" class="nb-input" placeholder="seu@email.com" required>
+                </div>
+
+                <div class="nb-form-group">
+                    <label class="nb-label">Senha</label>
+                    <div class="nb-password-wrapper">
+                        <input type="password" id="login-pass" class="nb-input" placeholder="••••••••" required>
+                        <button type="button" class="nb-password-toggle" onclick="togglePassword('login-pass', this)">
+                            <i class="far fa-eye"></i>
+                        </button>
+                    </div>
+                    <div style="text-align: right; margin-top: 8px;">
+                        <a href="#"
+                            style="color: var(--nb-text-secondary); font-size: 12px; text-decoration: none; font-weight: 500;">Esqueceu
+                            a senha?</a>
+                    </div>
+                </div>
+
+                <button type="submit" class="nb-btn-primary"
+                    style="margin-top: 10px; height: 60px; font-size: 18px; letter-spacing: 1px;">
+                    ENTRAR NO SISTEMA
+                </button>
+            </form>
+
+            <div
+                style="text-align: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.05);">
+                <p style="color: var(--nb-text-secondary); font-size: 14px;">
+                    Novo por aqui? <a href="registro.html"
+                        style="color: var(--nb-primary-light); text-decoration: none; font-weight: 700; border-bottom: 1px solid var(--nb-primary-light); padding-bottom: 2px;">Criar
+                        Conta Grátis</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api-client.js"></script>
+    <script>
+        function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const senha = document.getElementById('login-pass').value;
+
+            try {
+                const data = await apiClient.login(email, senha);
+                localStorage.setItem('makerToken', data.token);
+                localStorage.setItem('makerUser', JSON.stringify(data.user));
+
+                alert('Bem-vindo, ' + data.user.nome + '!');
+                window.location.href = 'index.html';
+            } catch (error) {
+                alert(error.message || 'Erro ao realizar login');
+            }
+        });
+    </script>
+</body>
+
+</html>

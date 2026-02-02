@@ -9,13 +9,15 @@ Este documento descreve as etapas necessárias para migrar o sistema atual (loca
 - **Autenticação**: JWT (JSON Web Tokens) para sessões seguras.
 
 ## 2. Estrutura de Dados (Modelos MongoDB)
-### Aluno (User)
+### Aluno 
 - `nome`: String
 - `email`: String (único)
 - `senha`: Hash (bcrypt)
 - `turma`: String (ex: '5A', '3º Ano')
 - `saldo`: Number (Maker Coins)
 - `avatar`: String (iniciais ou link)
+
+
 
 ### Transação (Transaction)
 - `aluno_id`: ObjectId
@@ -52,3 +54,7 @@ Este documento descreve as etapas necessárias para migrar o sistema atual (loca
 - **Sincronização**: O aluno pode acessar sua conta de qualquer dispositivo.
 - **Segurança**: Os coins não podem ser alterados editando o console do navegador.
 - **Escalabilidade**: Suporte para centenas de alunos simultâneos.
+Lembrando os dados do Admin:
+
+E-mail: admin@makercoins.com
+Senha: Maker@Admin2026

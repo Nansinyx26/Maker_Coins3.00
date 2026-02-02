@@ -7,6 +7,7 @@
     <title>Maker Coins - Criar Conta</title>
     <link href="css/bank-redesign.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
@@ -17,19 +18,22 @@
         <div class="nb-blob nb-blob-4"></div>
     </div>
 
-    <div class="nb-container" style="display: flex; align-items: center; min-height: 100vh; padding-top: 40px;">
-        <div class="nb-card nb-animate" style="width: 100%; max-width: 450px; margin: 0 auto; padding: 40px;">
-            <div style="text-align: center; margin-bottom: 30px;">
+    <div class="nb-container"
+        style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 40px 20px;">
+        <div class="nb-form-container nb-animate">
+            <div style="text-align: center; margin-bottom: 40px;">
                 <img src="img/MKR.png" alt="Logo"
-                    style="width: 80px; height: 80px; border-radius: 50%; box-shadow: 0 0 20px var(--nb-primary); margin-bottom: 20px;">
-                <h2 style="color: var(--nb-primary); font-size: 28px;">Criar sua Conta</h2>
-                <p style="color: var(--nb-text-secondary);">Entre para o ecossistema Maker</p>
+                    style="width: 90px; height: 90px; border-radius: 50%; border: 2px solid var(--nb-primary-light); box-shadow: 0 0 30px rgba(130, 10, 209, 0.4); margin-bottom: 24px;">
+                <h2
+                    style="color: var(--nb-white); font-size: 32px; font-weight: 800; letter-spacing: -1px; margin-bottom: 8px;">
+                    Criar Conta</h2>
+                <p style="color: var(--nb-text-secondary); font-size: 16px;">Junte-se ao ecossistema Maker Coins</p>
             </div>
 
-            <form id="register-form" onsubmit="handleRegister(event)">
+            <form id="register-form">
                 <div class="nb-form-group">
                     <label class="nb-label">Nome Completo</label>
-                    <input type="text" id="reg-name" class="nb-input" placeholder="Seu nome" required>
+                    <input type="text" id="reg-name" class="nb-input" placeholder="Ex: João Silva" required>
                 </div>
 
                 <div class="nb-form-group">
@@ -39,51 +43,75 @@
 
                 <div class="nb-form-group">
                     <label class="nb-label">Sua Turma</label>
-                    <select id="reg-class" class="nb-input"
-                        style="background: rgba(0,0,0,0.3); border-radius: 0; color: white;" required>
-                        <option value="" disabled selected>Selecione sua sala</option>
-                        <option value="5A">5º Ano A</option>
-                        <option value="5B">5º Ano B</option>
-                        <option value="5C">5º Ano C</option>
-                        <option value="3A">3º Ano A</option>
+                    <select id="reg-class" class="nb-input shadow-none" required
+                        style="appearance: none; background-color: rgba(255, 255, 255, 0.05); color: white; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23b0b0cc%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 15px center; background-size: 18px;">
+                        <option value="" disabled selected class="bg-dark">Selecione sua sala</option>
+                        <option value="5A" class="bg-dark">5º Ano A</option>
+                        <option value="5B" class="bg-dark">5º Ano B</option>
+                        <option value="5C" class="bg-dark">5º Ano C</option>
+                        <option value="3A" class="bg-dark">3º Ano A</option>
                     </select>
                 </div>
 
                 <div class="nb-form-group">
-                    <label class="nb-label">Senha de Acesso</label>
-                    <input type="password" id="reg-pass" class="nb-input" placeholder="••••••••" required>
+                    <label class="nb-label">Definir Senha</label>
+                    <div class="nb-password-wrapper">
+                        <input type="password" id="reg-pass" class="nb-input" placeholder="Mínimo 6 caracteres"
+                            required>
+                        <button type="button" class="nb-password-toggle" onclick="togglePassword('reg-pass', this)">
+                            <i class="far fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
 
-                <button type="submit" class="nb-btn-primary" style="margin-top: 20px;">
+                <button type="submit" class="nb-btn-primary"
+                    style="margin-top: 10px; height: 60px; font-size: 18px; letter-spacing: 1px;">
                     CADASTRAR NO BLOCKCHAIN
                 </button>
             </form>
 
-            <div style="text-align: center; margin-top: 24px;">
+            <div
+                style="text-align: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.05);">
                 <p style="color: var(--nb-text-secondary); font-size: 14px;">
-                    Já tem uma conta? <a href="login.html"
-                        style="color: var(--nb-primary-light); text-decoration: none; font-weight: 600;">Faça Login</a>
+                    Já faz parte da rede? <a href="login.html"
+                        style="color: var(--nb-primary-light); text-decoration: none; font-weight: 700; border-bottom: 1px solid var(--nb-primary-light); padding-bottom: 2px;">Fazer
+                        Login</a>
                 </p>
             </div>
         </div>
     </div>
 
-    <script src="js/index.js"></script>
+    <script src="js/api-client.js"></script>
     <script>
-        async function handleRegister(event) {
-            event.preventDefault();
-            const name = document.getElementById('reg-name').value;
+        function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nome = document.getElementById('reg-name').value;
             const email = document.getElementById('reg-email').value;
             const turma = document.getElementById('reg-class').value;
+            const senha = document.getElementById('reg-pass').value;
 
-            // Simulação de salvamento no MongoDB via fetch futuro
-            // const response = await fetch('/api/register', { ... });
-
-            addSystemLog(`Solicitação de registro para ${name} (${turma})`, 'info');
-
-            alert('Conta criada com sucesso! (Simulação Backend/MongoDB Atlas)');
-            window.location.href = 'index.html';
-        }
+            try {
+                await apiClient.register({ nome, email, turma, senha });
+                alert('Conta criada com sucesso! Faça login para continuar.');
+                window.location.href = 'login.html';
+            } catch (error) {
+                alert(error.message || 'Erro ao criar conta');
+            }
+        });
     </script>
 </body>
 
