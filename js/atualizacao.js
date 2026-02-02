@@ -347,7 +347,10 @@ async function displaySavedData() {
                     <div style="font-size: 10px; color: var(--nb-text-secondary);">${student.email}</div>
                 </div>
                 <div class="nb-list-amount" style="font-size: 14px;">${student.saldo.toLocaleString()} MKR</div>
-                <button class="nb-icon-btn" style="width: 32px; height: 32px; font-size: 12px; margin-left: 10px; color: #ff4757; background: #fff5f5;" onclick="deleteData('${student.email}')">
+                <button class="nb-icon-btn" style="width: 32px; height: 32px; font-size: 12px; margin-left: 10px; background: rgba(255, 255, 255, 0.1);" onclick="openHistoryModal('${student.email}', '${student.nome}')" title="Ver Histórico">
+                    <i class="fas fa-history"></i>
+                </button>
+                <button class="nb-icon-btn" style="width: 32px; height: 32px; font-size: 12px; margin-left: 10px; color: #ff4757; background: #fff5f5;" onclick="deleteData('${student.email}')" title="Remover Estudante">
                     <i class="fas fa-trash"></i>
                 </button>
             `;
@@ -644,49 +647,74 @@ async function alterarTodos(acao) {
 /**
  * History Functions
  */
-async function mostrarHistorico() {
-    const nomeInput = document.getElementById('name')?.value.trim(); // Changed 'pesquisa' to 'name' to match typical usage here
 
-    if (!selectedClass || !nomeInput) {
-        showNotification('Selecione uma turma e o estudante.', 'error');
-        return;
-    }
+async function openHistoryModal(email, nome) {
+    const modal = document.getElementById('history-modal');
+    const title = document.getElementById('history-modal-title');
+    const body = document.getElementById('history-modal-body');
+
+    if (!modal || !title || !body) return;
+
+    title.textContent = `Histórico de ${nome}`;
+    body.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>';
+    modal.style.display = 'flex';
 
     try {
-        const users = await apiClient.adminGetUsersByClass(selectedClass);
-        const user = users.find(u => u.nome.toLowerCase() === nomeInput.toLowerCase());
-
-        if (!user) {
-            showNotification('Estudante não encontrado.', 'error');
-            return;
-        }
-
-        const historico = await apiClient.adminGetUserHistory(user.email);
-        const container = document.getElementById('historicoAluno');
-        if (!container) {
-            // If it's the main panel, we might need a modal or just different container
-            // For now let's hope section-history exists or we show as toast
-            showNotification(`Histórico de ${user.nome}: ${historico.length} transações.`, 'info');
-            return;
-        }
-
-        container.innerHTML = `<h3>Histórico de ${user.nome}</h3>`;
+        const historico = await apiClient.adminGetUserHistory(email);
 
         if (historico.length === 0) {
-            container.innerHTML += '<p>Nenhuma transação.</p>';
+            body.innerHTML = '<p style="text-align:center; padding: 20px;">Nenhuma transação encontrada.</p>';
         } else {
-            const list = document.createElement('div');
+            const timeline = document.createElement('div');
+            timeline.className = 'timeline';
+
             historico.forEach(item => {
+                const date = new Date(item.data).toLocaleString('pt-BR');
                 const div = document.createElement('div');
-                div.innerHTML = `${new Date(item.data).toLocaleString()}: ${item.valor} MKR - ${item.descricao}`;
-                list.appendChild(div);
+                div.className = 'timeline-item';
+                div.innerHTML = `
+                    <div style="font-size: 12px; color: var(--nb-text-secondary);">${date}</div>
+                    <div style="font-weight: 600; margin-bottom: 4px;">${item.descricao || 'Sem descrição'}</div>
+                    <div style="font-weight: 700; color: ${item.valor >= 0 ? 'var(--nb-neon-green)' : '#ff4d4d'};">
+                        ${item.valor >= 0 ? '+' : ''}${item.valor} MKR
+                    </div>
+                `;
+                timeline.appendChild(div);
             });
-            container.appendChild(list);
+            body.innerHTML = '';
+            body.appendChild(timeline);
         }
+        addTerminalLog(`Histórico visualizado: ${nome}`, 'info');
     } catch (error) {
-        showNotification('Erro: ' + error.message, 'error');
+        body.innerHTML = `<p style="text-align:center; color:#ff4d4d;">Erro: ${error.message}</p>`;
+        addTerminalLog(`Erro ao carregar histórico: ${error.message}`, 'error');
     }
 }
+
+function closeHistoryModal() {
+    const modal = document.getElementById('history-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+window.openHistoryModal = openHistoryModal;
+window.closeHistoryModal = closeHistoryModal;
+
+async function mostrarHistorico() {
+    // Legacy function support
+    const nomeInput = document.getElementById('name')?.value.trim();
+    if (selectedClass && nomeInput) {
+        const users = await apiClient.adminGetUsersByClass(selectedClass);
+        const user = users.find(u => u.nome.toLowerCase() === nomeInput.toLowerCase());
+        if (user) {
+            openHistoryModal(user.email, user.nome);
+        } else {
+            showNotification('Estudante não encontrado.', 'error');
+        }
+    } else {
+        showNotification('Selecione uma turma e estudante.', 'error');
+    }
+}
+
 
 function showJustification(index, justificativa) {
     const decodedJustification = decodeURIComponent(justificativa);
